@@ -5,7 +5,7 @@
 
 [project]
 name = "pyfoot-space"
-version = "0.1.1"
+version = "0.1.2"
 description = "Das Basisprojekt des Kurses: Raumschiffe, PowerUps und Asteroiden"
 authors = [{ name = "Jörg Schaede" }]
 # Quelltext MIT; die Anleitungen in docs/ stehen unter CC BY-SA 4.0.
