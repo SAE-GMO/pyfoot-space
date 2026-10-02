@@ -16,6 +16,10 @@ requires-python = ">=3.11"
 # Grund: An der Schule hat niemand Administratorrechte.
 dependencies = ["pygame>=2.5"]
 
+# Hier fragt `tools\update_space.py` nach der neuesten Version.
+[project.urls]
+Repository = "https://github.com/SAE-GMO/pyfoot-space"
+
 [project.optional-dependencies]
 dev = ["pytest>=8", "mypy>=1.8"]
 

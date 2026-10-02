@@ -145,13 +145,26 @@ Loesung im Paket landet.
 
 ## Eine neue Version ausliefern
 
-Jedes Paket traegt ein Manifest `tools\paket.json`: Version (Tag und
-Uhrzeit des Packens) und eine Pruefsumme je Datei. Damit frischen die
-Schueler:innen ihr Projekt auf, ohne ihre Arbeit zu verlieren:
+Jedes Paket traegt ein Manifest `tools\paket.json`: Version und eine
+Pruefsumme je Datei. Damit frischen die Schueler:innen ihr Projekt auf, ohne
+ihre Arbeit zu verlieren:
 
 ```bash
 python tools\update_space.py --dry-run
 ```
+
+**Woher die neue Version kommt.** Ohne Pfad fragt das Werkzeug per `git`
+nach dem neuesten Versions-Tag dieses Repositorys (Adresse aus
+`pyproject.toml`, `[project.urls]`), klont diesen Stand und die PyFoot-Version,
+die er festlegt, in einen temporaeren Ordner und baut daraus das Paket -- mit
+`build_student_package.py` aus genau diesem Stand. Das Ergebnis gleicht dem
+Release; im Manifest steht dann der Tag als Version. Das Repository ist
+oeffentlich, `git` fragt nicht nach einer Anmeldung. Ohne `git` oder Netz
+nennt das Werkzeug den Grund; dann geht es mit einer heruntergeladenen
+`Space.zip` als Pfad.
+
+Eine neue Version erreicht die Schueler:innen also, sobald ihr Tag auf GitHub
+steht (siehe „Automatische Pruefung und Release").
 
 Verglichen wird jede Datei mit dem Stand, der **zuletzt ausgeliefert** wurde:
 

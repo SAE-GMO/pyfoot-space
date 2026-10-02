@@ -16,16 +16,23 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "tools"))
 
+import update_space  # noqa: E402
 from update_space import (  # noqa: E402
+    REPOSITORY,
     Change,
+    FetchFailed,
     apply,
     backup,
     data_hash,
+    fetch_package,
     find_package,
+    latest_tag,
     manifest_of,
     merge_init,
+    newest_tag,
     package_files,
     plan,
+    repository_of,
 )
 
 INIT = '''"""Eigene Raumschiffe."""
@@ -265,3 +272,178 @@ def test_das_manifest_nennt_sich_nicht_selbst() -> None:
 
     assert "tools/paket.json" not in text
     assert "main_space.py" in text
+
+
+# ----------------------------------------------------------------------
+# Neueste Version von GitHub
+#
+# Hier laeuft kein echtes git: Ein nachgebauter Ablauf legt an, was ein
+# Klonen anlegen wuerde, und merkt sich die Befehle. So pruefen die Tests
+# ohne Netz, was das Werkzeug verlangt.
+# ----------------------------------------------------------------------
+
+LS_REMOTE = """\
+1111111111111111111111111111111111111111\trefs/tags/v0.9.0
+2222222222222222222222222222222222222222\trefs/tags/v0.10.0
+3333333333333333333333333333333333333333\trefs/tags/v0.2.5
+4444444444444444444444444444444444444444\trefs/tags/probe
+"""
+
+SPACE_PYPROJECT = """\
+[tool.sae-gmo.pyfoot]
+version = "0.3.0"
+repository = "https://example.org/pyfoot"
+
+[tool.sae-gmo.neighbours]
+pyfoot = "../pyfoot"
+"""
+
+
+class FakeRunner:
+    """Merkt sich die Befehle und legt an, was sie anlegen wuerden."""
+
+    def __init__(self, ls_remote: str = LS_REMOTE, build: bool = True) -> None:
+        self.ls_remote = ls_remote
+        self.build = build
+        self.commands: list[list[str]] = []
+
+    def __call__(self, command: list[str], cwd: Path | None) -> str:
+        self.commands.append(command)
+        if "ls-remote" in command:
+            return self.ls_remote
+        if "clone" in command:
+            ziel = Path(command[-1])
+            ziel.mkdir(parents=True)
+            if "pyfoot-space" in ziel.name:
+                (ziel / "pyproject.toml").write_text(SPACE_PYPROJECT, encoding="utf-8")
+        elif command[-3:-1] == ["--folder", "--out"] and self.build:
+            paket = Path(command[-1]) / "Space"
+            paket.mkdir(parents=True)
+            (paket / "main_space.py").write_text("neu\n", encoding="utf-8")
+        return ""
+
+
+def test_der_neueste_tag_wird_zahlenweise_bestimmt() -> None:
+    """`v0.10.0` ist neuer als `v0.9.0`, auch wenn es als Text kleiner ist."""
+    assert newest_tag(LS_REMOTE) == "v0.10.0"
+
+
+def test_ohne_versions_tag_gibt_es_keinen_neuesten() -> None:
+    """Andere Tags zaehlen nicht."""
+    assert newest_tag("abc\trefs/tags/probe\n") is None
+    assert newest_tag("") is None
+
+
+def test_die_adresse_steht_in_der_pyproject(tmp_path: Path) -> None:
+    """Die Adresse kommt aus `[project.urls]`, sonst gilt die Vorgabe."""
+    assert repository_of(tmp_path) == REPOSITORY
+
+    (tmp_path / "pyproject.toml").write_text(
+        '[project.urls]\nRepository = "https://example.org/space"\n', encoding="utf-8"
+    )
+    assert repository_of(tmp_path) == "https://example.org/space"
+
+
+def test_die_eigene_pyproject_nennt_das_repository() -> None:
+    """Das ausgelieferte Projekt fragt am richtigen Ort nach."""
+    assert repository_of(PROJECT_ROOT) == REPOSITORY
+
+
+def test_git_fragt_nie_nach_einer_anmeldung() -> None:
+    """Gespeicherte Anmeldungen bleiben aus -- das Repository ist oeffentlich."""
+    runner = FakeRunner()
+    latest_tag("https://example.org/space", run=runner)
+
+    befehl = runner.commands[0]
+    assert befehl[1:3] == ["-c", "credential.helper="]
+    assert befehl[-4:] == ["ls-remote", "--tags", "--refs", "https://example.org/space"]
+
+
+def test_git_wandelt_keine_zeilenenden_um(tmp_path: Path) -> None:
+    """Mit `core.autocrlf=true` gingen sonst die PDFs beim Klonen kaputt."""
+    runner = FakeRunner()
+    fetch_package("https://example.org/space", "v0.10.0", tmp_path, run=runner)
+
+    for befehl in (c for c in runner.commands if "clone" in c):
+        stelle = befehl.index("core.autocrlf=false")
+        assert befehl[stelle - 1] == "-c"
+
+
+def test_ohne_tag_wird_das_gemeldet() -> None:
+    """Ein Repository ohne Version ist ein Fehler, kein leeres Paket."""
+    with pytest.raises(FetchFailed, match="keine Version"):
+        latest_tag("https://example.org/space", run=FakeRunner(ls_remote=""))
+
+
+def test_ohne_git_wird_das_gemeldet(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fehlt git, sagt die Meldung genau das."""
+    monkeypatch.setattr("update_space.shutil.which", lambda name: None)
+
+    with pytest.raises(FetchFailed, match="git ist auf diesem Rechner nicht"):
+        latest_tag("https://example.org/space", run=FakeRunner())
+
+
+def test_das_paket_entsteht_aus_dem_getaggten_stand(tmp_path: Path) -> None:
+    """Geholt wird der Tag, dazu PyFoot in der Version, die er festlegt."""
+    runner = FakeRunner()
+
+    paket = fetch_package("https://example.org/space", "v0.10.0", tmp_path, run=runner)
+
+    assert (paket / "main_space.py").read_text(encoding="utf-8") == "neu\n"
+    klone = [c for c in runner.commands if "clone" in c]
+    assert klone[0][-4:] == ["--branch", "v0.10.0", "https://example.org/space",
+                             str(tmp_path / "pyfoot-space")]
+    assert klone[1][-4:] == ["--branch", "v0.3.0", "https://example.org/pyfoot",
+                             str((tmp_path / "pyfoot").resolve())]
+
+
+def test_gebaut_wird_mit_den_werkzeugen_des_neuen_stands(tmp_path: Path) -> None:
+    """Was ins Paket gehoert, bestimmt die neue Version, nicht die alte."""
+    runner = FakeRunner()
+
+    fetch_package("https://example.org/space", "v0.10.0", tmp_path, run=runner)
+
+    werkzeuge = [Path(c[1]) for c in runner.commands if c[0] == sys.executable]
+    neu = tmp_path / "pyfoot-space" / "tools"
+    assert werkzeuge == [neu / "get_pyfoot.py", neu / "build_student_package.py"]
+
+
+def test_ein_fehlendes_paket_wird_gemeldet(tmp_path: Path) -> None:
+    """Baut das Werkzeug nichts, endet es mit einer Meldung."""
+    with pytest.raises(FetchFailed, match="nicht gebaut"):
+        fetch_package(
+            "https://example.org/space", "v0.10.0", tmp_path, run=FakeRunner(build=False)
+        )
+
+
+def test_mit_der_neuesten_version_gibt_es_nichts_zu_tun(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Steht der neueste Tag schon im Manifest, wird nichts geholt."""
+    monkeypatch.setattr(update_space, "_known_hashes", lambda project: ({}, "v0.10.0"))
+    monkeypatch.setattr(update_space, "latest_tag", lambda repository: "v0.10.0")
+
+    def nicht_holen(*args: object) -> Path:
+        raise AssertionError("darf nicht geholt werden")
+
+    monkeypatch.setattr(update_space, "fetch_package", nicht_holen)
+
+    assert update_space.main(["--dry-run"]) == 0
+    assert "schon die neueste Version (v0.10.0)" in capsys.readouterr().out
+
+
+def test_ohne_netz_zeigt_es_den_weg_ueber_die_zip(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Geht GitHub nicht, nennt das Werkzeug den Grund und den anderen Weg."""
+
+    def kein_netz(repository: str) -> str:
+        raise FetchFailed("Could not resolve host: github.com")
+
+    monkeypatch.setattr(update_space, "latest_tag", kein_netz)
+    monkeypatch.setattr(update_space, "find_package", lambda: None)
+
+    assert update_space.main(["--dry-run"]) == 1
+    ausgabe = capsys.readouterr().out
+    assert "Could not resolve host" in ausgabe
+    assert "update_space.py C:" in ausgabe

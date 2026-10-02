@@ -385,15 +385,17 @@ Meldungen verhindern nichts, sie sind ein Hinweis.
 Im Laufe des Kurses kommen neue Welten und neue Raumschiffe dazu. Du musst
 dafür **nicht** neu anfangen — und deine Arbeit geht dabei nicht verloren.
 
-1. Lade `Space.zip` aus Moodle herunter. Sie darf im Ordner *Downloads*
-   liegen bleiben; **nicht** auspacken.
-2. Sieh im Terminal erst nach, was passieren würde:
+1. Sieh im Terminal erst nach, was passieren würde:
 
    ```bash
    python tools\update_space.py --dry-run
    ```
 
-3. Wenn das passt, ohne `--dry-run` noch einmal:
+   Das Werkzeug holt die neueste Version selbst von GitHub. Dazu braucht es
+   das Programm `git`, eine Anmeldung ist nicht nötig. Hast du schon die
+   neueste Version, sagt es das und tut nichts.
+
+2. Wenn das passt, ohne `--dry-run` noch einmal:
 
    ```bash
    python tools\update_space.py
@@ -417,16 +419,22 @@ Bevor irgendetwas geändert wird, landet ein **Backup** deines ganzen Ordners
 als ZIP-Datei unter `backup\`. Falls doch etwas schiefgeht, packst du sie
 einfach wieder aus.
 
-Findet das Werkzeug die Datei nicht selbst, gib den Pfad dazu an:
+**Kommt das Werkzeug nicht an GitHub heran** — kein `git`, kein Netz —,
+nennt es den Grund. Dann geht es auch mit `Space.zip` aus Moodle: Datei
+herunterladen, **nicht** auspacken, und den Pfad dazu angeben:
 
 ```bash
 python tools\update_space.py C:\Users\DEINNAME\Downloads\Space.zip
 ```
 
-> **Beim allerersten Mal** hat dein Projekt das Werkzeug noch gar nicht. Dann
-> packe `Space.zip` einmal irgendwo aus und kopiere daraus die Datei
-> `tools\update_space.py` in deinen Projektordner nach `tools\`. Danach geht
-> es wie oben beschrieben.
+> **Sucht das Werkzeug nur nach `Space.zip` und fragt nicht bei GitHub?**
+> Dann hat dein Projekt noch eine ältere Fassung. Frische einmal mit
+> `Space.zip` auf wie oben — dabei kommt auch die neue Fassung des Werkzeugs.
+> Danach geht es über GitHub.
+>
+> **Fehlt `tools\update_space.py` ganz**, packe `Space.zip` einmal irgendwo
+> aus und kopiere daraus die Datei `tools\update_space.py` in deinen
+> Projektordner nach `tools\`.
 
 ---
 

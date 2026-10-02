@@ -3,8 +3,16 @@
 Aufruf (im Projektordner):
 
     python tools\\update_space.py --dry-run        zeigt nur, was geschehen wuerde
-    python tools\\update_space.py                  sucht die neueste `Space.zip`
+    python tools\\update_space.py                  holt die neueste Version von GitHub
     python tools\\update_space.py C:\\Pfad\\Space.zip   nimmt genau diese Datei
+
+**Woher die neue Version kommt.** Ohne Pfad fragt das Werkzeug per `git` bei
+GitHub nach dem neuesten Versions-Tag (`v0.1.1` usw.), holt diesen Stand und
+die PyFoot-Version, die er festlegt, und baut daraus das Paket -- mit dem
+Werkzeug aus genau diesem Stand, also so, wie es auch im Release liegt. Das
+Repository ist oeffentlich; eine Anmeldung ist nicht noetig. Geht das nicht
+(kein `git`, kein Netz), nennt das Werkzeug den Grund; dann hilft der Weg
+ueber eine heruntergeladene `Space.zip`.
 
 **Was angefasst wird und was nicht.** Jedes Paket bringt ein Manifest mit
 (`tools/paket.json`): darin steht zu jeder Datei eine Pruefsumme. Beim
@@ -32,9 +40,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
+import tomllib
 import zipfile
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from typing import NamedTuple
@@ -61,8 +75,17 @@ STUDENT_FOLDERS = ("ships/", "levels/")
 #: Was nicht mit ins Backup wandert -- Zwischenstaende und alte Backups.
 SKIP_NAMES = {"__pycache__", ".mypy_cache", ".pytest_cache", ".venv", "backup", "dist"}
 
-#: Ordner, in denen nach einem Paket gesucht wird, wenn keiner genannt ist.
+#: Ordner, in denen nach einer `Space.zip` gesucht wird, wenn GitHub nicht
+#: erreichbar ist -- fuer den Hinweis, wie es trotzdem geht.
 SEARCH_FOLDERS = [Path.home() / "Downloads", Path.home() / "Desktop", Path.cwd()]
+
+#: Wo die Versionen liegen, falls `pyproject.toml` es nicht sagt. Aeltere
+#: Pakete hatten dort noch keine Angabe.
+REPOSITORY = "https://github.com/SAE-GMO/pyfoot-space"
+
+#: Wie lange ein einzelner Schritt (Abfrage, Herunterladen, Bauen) dauern
+#: darf, in Sekunden.
+TIMEOUT = 300
 
 __all__ = [
     "data_hash",
@@ -74,6 +97,11 @@ __all__ = [
     "apply",
     "backup",
     "find_package",
+    "FetchFailed",
+    "repository_of",
+    "newest_tag",
+    "latest_tag",
+    "fetch_package",
 ]
 
 
@@ -362,6 +390,153 @@ def _merge_file(ziel: Path, daten: bytes, name: str, hinweise: list[str]) -> Non
 
 
 # ----------------------------------------------------------------------
+# Die neueste Version von GitHub holen
+# ----------------------------------------------------------------------
+
+#: Ein Versions-Tag in der Ausgabe von `git ls-remote --tags`.
+_TAG = re.compile(r"refs/tags/(v(\d+)\.(\d+)\.(\d+))$")
+
+#: Fuehrt einen Befehl aus und liefert seine Ausgabe: Befehl, Arbeitsordner.
+Runner = Callable[[list[str], Path | None], str]
+
+
+class FetchFailed(Exception):
+    """Die neue Version liess sich nicht holen -- der Text sagt, warum."""
+
+
+def repository_of(project: Path) -> str:
+    """Liest die Adresse des Repositorys aus `pyproject.toml`.
+
+    Returns:
+        Die Adresse unter `[project.urls]`, sonst `REPOSITORY`.
+    """
+    try:
+        with (project / "pyproject.toml").open("rb") as datei:
+            daten = tomllib.load(datei)
+    except (OSError, tomllib.TOMLDecodeError):
+        return REPOSITORY
+    adresse = daten.get("project", {}).get("urls", {}).get("Repository")
+    return str(adresse) if adresse else REPOSITORY
+
+
+def newest_tag(ls_remote: str) -> str | None:
+    """Findet in der Ausgabe von `git ls-remote --tags` den neuesten Tag.
+
+    Gezaehlt werden nur Tags der Form `v1.2.3`, verglichen Zahl fuer Zahl --
+    `v0.10.0` ist also neuer als `v0.9.0`.
+    """
+    tags: list[tuple[tuple[int, int, int], str]] = []
+    for zeile in ls_remote.splitlines():
+        treffer = _TAG.search(zeile.strip())
+        if treffer:
+            nummer = (int(treffer[2]), int(treffer[3]), int(treffer[4]))
+            tags.append((nummer, treffer[1]))
+    return max(tags)[1] if tags else None
+
+
+def _run(command: list[str], cwd: Path | None) -> str:
+    """Fuehrt einen Befehl aus; ein Fehler wird zu `FetchFailed`.
+
+    `git` fragt dabei nie nach einem Kennwort: Das Repository ist oeffentlich,
+    und eine Rueckfrage liesse das Werkzeug sonst haengen.
+    """
+    umgebung = {**os.environ, "GIT_TERMINAL_PROMPT": "0"}
+    try:
+        ergebnis = subprocess.run(
+            command, cwd=cwd, capture_output=True, text=True,
+            env=umgebung, timeout=TIMEOUT,
+        )
+    except FileNotFoundError as fehler:
+        raise FetchFailed(f"{command[0]} wurde nicht gefunden.") from fehler
+    except subprocess.TimeoutExpired as fehler:
+        raise FetchFailed(f"Keine Antwort nach {TIMEOUT} Sekunden.") from fehler
+    if ergebnis.returncode != 0:
+        meldung = (ergebnis.stderr or ergebnis.stdout).strip().splitlines()
+        raise FetchFailed(meldung[-1] if meldung else f"{command[0]} schlug fehl.")
+    return ergebnis.stdout
+
+
+def _git(*arguments: str) -> list[str]:
+    """Baut einen git-Befehl, der die Einstellungen des Rechners nicht braucht.
+
+    - Keine gespeicherte Anmeldung: Das Repository ist oeffentlich.
+    - Keine Umwandlung der Zeilenenden: Mit `core.autocrlf=true`, unter
+      Windows ueblich, machte git sonst auch in PDF-Dateien aus jedem
+      Zeilenende-Byte zwei -- und die PDFs waeren kaputt. So kommt jede
+      Datei Byte fuer Byte an, wie sie im Repository liegt.
+    """
+    git = shutil.which("git")
+    if git is None:
+        raise FetchFailed("git ist auf diesem Rechner nicht installiert.")
+    return [git, "-c", "credential.helper=", "-c", "core.autocrlf=false", *arguments]
+
+
+def latest_tag(repository: str, run: Runner = _run) -> str:
+    """Fragt bei GitHub nach dem neuesten Versions-Tag.
+
+    Raises:
+        FetchFailed: Ohne git, ohne Netz -- oder wenn es noch keinen Tag gibt.
+    """
+    tag = newest_tag(run(_git("ls-remote", "--tags", "--refs", repository), None))
+    if tag is None:
+        raise FetchFailed(f"Unter {repository} gibt es noch keine Version.")
+    return tag
+
+
+def fetch_package(
+    repository: str, tag: str, workdir: Path, run: Runner = _run
+) -> Path:
+    """Holt einen Stand von GitHub und baut daraus das Schuelerpaket.
+
+    Gebaut wird mit den Werkzeugen **aus diesem Stand**: Was ins Paket
+    gehoert, steht damit an genau einer Stelle, und das Ergebnis gleicht dem
+    Release. PyFoot kommt als Nachbarordner dazu, in der festgelegten Version.
+
+    Args:
+        repository: Adresse von pyfoot-space.
+        tag: Der Versions-Tag, etwa `v0.1.1`.
+        workdir: Ein leerer Ordner fuer die Zwischenstaende.
+        run: Fuehrt einen Befehl aus (fuer die Tests austauschbar).
+
+    Returns:
+        Der Ordner mit dem fertigen Paket.
+
+    Raises:
+        FetchFailed: Wenn ein Schritt scheitert.
+    """
+    space = workdir / "pyfoot-space"
+    run(_git("clone", "--quiet", "--depth", "1", "--branch", tag, repository, str(space)), None)
+
+    try:
+        with (space / "pyproject.toml").open("rb") as datei:
+            sae_gmo = tomllib.load(datei)["tool"]["sae-gmo"]
+        version = str(sae_gmo["pyfoot"]["version"])
+        pyfoot_repository = str(sae_gmo["pyfoot"]["repository"])
+        nachbar = str(sae_gmo["neighbours"]["pyfoot"])
+    except (OSError, KeyError, tomllib.TOMLDecodeError) as fehler:
+        raise FetchFailed(f"{tag}: pyproject.toml nennt keine PyFoot-Version.") from fehler
+
+    pyfoot = (space / nachbar).resolve()
+    run(
+        _git("clone", "--quiet", "--depth", "1", "--branch", f"v{version}",
+             pyfoot_repository, str(pyfoot)),
+        None,
+    )
+    run([sys.executable, str(space / "tools" / "get_pyfoot.py"), "--local"], space)
+
+    ziel = workdir / "paket"
+    run(
+        [sys.executable, str(space / "tools" / "build_student_package.py"),
+         "--folder", "--out", str(ziel)],
+        space,
+    )
+    paket = ziel / "Space"
+    if not paket.is_dir():
+        raise FetchFailed(f"{tag}: Das Paket wurde nicht gebaut.")
+    return paket
+
+
+# ----------------------------------------------------------------------
 # Aufruf
 # ----------------------------------------------------------------------
 
@@ -384,7 +559,10 @@ def main(arguments: list[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Frischt Space auf, ohne eigene Dateien zu ueberschreiben."
     )
-    parser.add_argument("quelle", nargs="?", help="Space.zip oder ein Ordner")
+    parser.add_argument(
+        "quelle", nargs="?",
+        help="Space.zip oder ein Ordner; ohne Angabe die neueste Version von GitHub",
+    )
     parser.add_argument(
         "--dry-run", action="store_true", help="nur zeigen, was geschehen wuerde"
     )
@@ -393,27 +571,29 @@ def main(arguments: list[str]) -> int:
     )
     options = parser.parse_args(arguments)
 
-    quelle = Path(options.quelle) if options.quelle else find_package()
-    if quelle is None:
-        print("Keine Space.zip gefunden -- weder in Downloads noch auf dem")
-        print("Desktop noch hier. Gib den Pfad an:")
-        print("    python tools\\update_space.py C:\\Pfad\\Space.zip")
-        return 1
-    if not quelle.exists():
-        print(f"Nicht gefunden: {quelle}", file=sys.stderr)
-        return 1
-
-    try:
-        files = package_files(quelle)
-    except ValueError as error:
-        print(str(error), file=sys.stderr)
-        return 1
-
     bekannt, alte_version = _known_hashes(PROJECT_ROOT)
-    neue_version = _version_of(files)
+
+    if options.quelle:
+        quelle = Path(options.quelle)
+        if not quelle.exists():
+            print(f"Nicht gefunden: {quelle}", file=sys.stderr)
+            return 1
+        try:
+            files = package_files(quelle)
+        except ValueError as error:
+            print(str(error), file=sys.stderr)
+            return 1
+        herkunft = str(quelle)
+        neue_version = _version_of(files)
+    else:
+        geholt = _from_github(alte_version)
+        if isinstance(geholt, int):
+            return geholt
+        herkunft, neue_version, files = geholt
+
     changes = plan(PROJECT_ROOT, files, bekannt)
 
-    print(f"Paket:   {quelle}")
+    print(f"Paket:   {herkunft}")
     print(f"Version: {alte_version}  ->  {neue_version}")
     print("=" * 60)
     _report(changes)
@@ -443,6 +623,37 @@ def main(arguments: list[str]) -> int:
     for hinweis in hinweise:
         print(f"  ! {hinweis}")
     return 0
+
+
+def _from_github(alte_version: str) -> tuple[str, str, dict[str, bytes]] | int:
+    """Holt die neueste Version von GitHub.
+
+    Returns:
+        Herkunft, Version und Dateien des Pakets -- oder, wenn es nichts zu
+        tun gibt oder nicht ging, gleich den Rueckgabewert fuer `main`: 0,
+        wenn die neueste Version schon da ist, 1 bei einem Fehler (der Grund
+        ist dann schon gemeldet).
+    """
+    repository = repository_of(PROJECT_ROOT)
+    print(f"Frage {repository} nach der neuesten Version ...")
+    try:
+        tag = latest_tag(repository)
+        if tag == alte_version:
+            print(f"Du hast schon die neueste Version ({tag}). Es gibt nichts zu tun.")
+            return 0
+        print(f"Hole {tag} ...")
+        with tempfile.TemporaryDirectory(
+            prefix="space_update_", ignore_cleanup_errors=True
+        ) as zwischen:
+            files = package_files(fetch_package(repository, tag, Path(zwischen)))
+    except (FetchFailed, ValueError) as fehler:
+        print(f"Die neue Version liess sich nicht von GitHub holen: {fehler}")
+        print("Stattdessen geht es mit einer heruntergeladenen Space.zip:")
+        zip_datei = find_package()
+        beispiel = zip_datei if zip_datei is not None else Path("C:/Pfad/Space.zip")
+        print(f"    python tools\\update_space.py {beispiel}")
+        return 1
+    return f"{repository} ({tag})", tag, files
 
 
 def _version_of(files: dict[str, bytes]) -> str:
