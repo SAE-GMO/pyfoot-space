@@ -1,0 +1,1 @@
+"""Die Akteure des Basisprojekts."""

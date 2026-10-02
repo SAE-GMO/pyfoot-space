@@ -1,0 +1,18 @@
+# Die Bibliothek wird geholt, nicht eingecheckt:  python tools\get_pyfoot.py
+/pyfoot/
+/pyfoot.neu/
+
+# Das Schuelerpaket entsteht mit  python tools\build_student_package.py
+/dist/
+
+# Zwischenstaende von Python und den Pruefwerkzeugen
+__pycache__/
+*.py[co]
+.mypy_cache/
+.pytest_cache/
+.venv/
+
+# Sicherung vor dem Auffrischen (tools\update_space.py) und Liegengebliebenes
+/backup/
+*.bak
+*.tmp

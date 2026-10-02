@@ -1,0 +1,45 @@
+# Space ist ein Arbeitsprojekt, kein installierbares Paket: Schueler:innen
+# arbeiten *in* diesem Ordner. Deshalb gibt es hier bewusst keinen
+# [build-system]-Abschnitt. Die Angaben dienen der Dokumentation und der
+# Einstellung von pytest und mypy.
+
+[project]
+name = "pyfoot-space"
+version = "0.1.0"
+description = "Das Basisprojekt des Kurses: Raumschiffe, PowerUps und Asteroiden"
+authors = [{ name = "Jörg Schaede" }]
+# Quelltext MIT; die Anleitungen in docs/ stehen unter CC BY-SA 4.0.
+license = "MIT AND CC-BY-SA-4.0"
+license-files = ["LICENSE", "docs/LICENSE.md"]
+requires-python = ">=3.11"
+# PyFoot wird nicht installiert, sondern mitgeliefert (Ordner pyfoot/).
+# Grund: An der Schule hat niemand Administratorrechte.
+dependencies = ["pygame>=2.5"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "mypy>=1.8"]
+
+# Welche PyFoot-Version mitgeliefert wird. Im Repository liegt der Ordner
+# pyfoot/ nicht; `python tools\get_pyfoot.py` holt genau diese Version.
+[tool.sae-gmo.pyfoot]
+version = "0.1.0"
+repository = "https://github.com/SAE-GMO/pyfoot"
+
+# Wo die Nachbarprojekte liegen, relativ zu diesem Ordner. Die einzige Stelle,
+# die bei einem Umbenennen oder Verschieben angepasst werden muss.
+# Gebraucht nur zum Entwickeln: `python tools\get_pyfoot.py --local`.
+[tool.sae-gmo.neighbours]
+pyfoot = "../pyfoot"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+# Der Typcheck ist bewusst nicht blockierend (Anforderungsdokument Abschnitt 5).
+warn_unused_ignores = false
+
+[[tool.mypy.overrides]]
+module = ["pygame.*"]
+ignore_missing_imports = true
