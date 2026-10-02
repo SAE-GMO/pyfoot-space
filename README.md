@@ -174,6 +174,21 @@ Die neue Version heisst `name.py.neu` und nicht `name.neu.py`. Mit der Endung
 Vor jeder Aenderung legt das Werkzeug ein Backup des ganzen Projekts unter
 `backup\` ab.
 
+## Automatische Pruefung und Release
+
+**Bei jedem Push** holt GitHub die festgelegte PyFoot-Version und laesst
+Tests und Typpruefung laufen (`.github/workflows/tests.yml`, Windows,
+Python 3.11 und 3.13). Der Haken am Commit zeigt das Ergebnis.
+
+**Bei jedem neuen Tag** `v<version>` baut GitHub `Space.zip` und haengt es an
+das Release (`.github/workflows/release.yml`). Vorher prueft es, dass der Tag
+zur `version` in `pyproject.toml` passt, und laesst alle Tests laufen; schlaegt
+etwas fehl, entsteht kein Release. Eine neue Version heisst also:
+
+1. `version` in `pyproject.toml` erhoehen, committen, pushen,
+2. `git tag -a v0.2.0 -m "Space 0.2.0"`,
+3. `git push origin v0.2.0`.
+
 ## Werkzeuge
 
 ```bash

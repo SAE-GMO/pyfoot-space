@@ -1,0 +1,71 @@
+# Baut bei jedem neuen Tag v<version> das Schuelerpaket Space.zip und haengt
+# es an das Release zu diesem Tag an.
+#
+# Ablauf: Tag pruefen, festgelegte PyFoot-Version holen, testen, Paket bauen,
+# Release anlegen. Schlaegt ein Schritt fehl, entsteht kein Release.
+#
+# Ein Release ausloesen (im Ordner pyfoot-space):
+#   1. version in pyproject.toml erhoehen, committen, pushen
+#   2. git tag -a v0.2.0 -m "Space 0.2.0"
+#   3. git push origin v0.2.0
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Space.zip bauen und veroeffentlichen
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Tag mit der Version in pyproject.toml vergleichen
+        run: |
+          python - "${{ github.ref_name }}" <<'EOF'
+          import sys, tomllib
+          tag = sys.argv[1]
+          with open("pyproject.toml", "rb") as datei:
+              version = tomllib.load(datei)["project"]["version"]
+          if tag != f"v{version}":
+              sys.exit(f"Tag {tag} passt nicht zu version = {version} in pyproject.toml")
+          print(f"Tag {tag} passt.")
+          EOF
+
+      - name: Pakete installieren
+        run: python -m pip install pygame pytest mypy
+
+      - name: Festgelegte PyFoot-Version holen
+        run: python tools/get_pyfoot.py
+
+      - name: Tests (pytest)
+        run: python -m pytest -q
+
+      - name: Typpruefung (mypy)
+        run: python tools/check_project.py --ci
+
+      - name: Schuelerpaket bauen
+        run: python tools/build_student_package.py
+
+      - name: Release anlegen oder Datei ersetzen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" dist/Space.zip --clobber
+          else
+            gh release create "$TAG" dist/Space.zip --title "Space ${TAG#v}" --generate-notes
+          fi

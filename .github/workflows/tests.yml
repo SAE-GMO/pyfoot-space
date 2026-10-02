@@ -1,0 +1,46 @@
+# Automatische Pruefung bei jedem Push und jedem Pull Request.
+#
+# PyFoot wird genau in der Version geholt, die in pyproject.toml festgelegt
+# ist ([tool.sae-gmo.pyfoot]). Damit wird Space gegen die PyFoot-Version
+# getestet, die auch ins Schuelerpaket kommt.
+#
+# Gepruft wird unter Windows, weil die Schulrechner Windows haben; einmal mit
+# der aeltesten unterstuetzten und einmal mit einer aktuellen Python-Version.
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  space:
+    name: Space (Python ${{ matrix.python }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Pakete installieren
+        run: python -m pip install pygame pytest mypy
+
+      - name: Festgelegte PyFoot-Version holen
+        run: python tools/get_pyfoot.py
+
+      - name: Tests (pytest)
+        run: python -m pytest -q
+
+      - name: Typpruefung (mypy)
+        run: python tools/check_project.py --ci
