@@ -28,6 +28,7 @@ from build_student_package import (  # noqa: E402
     build_zip,
     collect,
     missing_tools,
+    package_version,
 )
 
 #: Namen, die im Paket nichts zu suchen haben. Sie stehen fuer die
@@ -113,6 +114,27 @@ def test_das_manifest_liegt_bei(package: Path) -> None:
     assert inhalt["version"]
     assert inhalt["dateien"]["main_space.py"]
     assert "tools/paket.json" not in inhalt["dateien"]
+
+
+def test_die_version_heisst_wie_der_tag(package: Path) -> None:
+    """Aus `version = "0.1.2"` wird `v0.1.2` -- wie der Tag auf GitHub.
+
+    Nur dann erkennt `update_space.py` nach dem Entpacken einer `Space.zip`,
+    dass die neueste Version schon da ist.
+    """
+    import json
+    import tomllib
+
+    with (PROJECT_ROOT / "pyproject.toml").open("rb") as datei:
+        version = tomllib.load(datei)["project"]["version"]
+    inhalt = json.loads((package / "tools" / "paket.json").read_text(encoding="utf-8"))
+
+    assert inhalt["version"] == f"v{version}"
+
+
+def test_ohne_versionsangabe_gilt_die_uhrzeit(tmp_path: Path) -> None:
+    """Ein Projekt ohne lesbare `pyproject.toml` bekommt trotzdem eine Version."""
+    assert package_version(tmp_path)[:2] == "20"
 
 
 def test_das_manifest_passt_zum_paket(package: Path) -> None:

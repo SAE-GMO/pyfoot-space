@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import shutil
 import sys
+import tomllib
 import zipfile
 from datetime import datetime
 from pathlib import Path
@@ -129,9 +130,19 @@ def missing_tools(root: Path = PROJECT_ROOT) -> list[str]:
     )
 
 
-def package_version() -> str:
-    """Nennt die Version: Tag und Uhrzeit des Packens."""
-    return datetime.now().strftime("%Y-%m-%d %H:%M")
+def package_version(root: Path = PROJECT_ROOT) -> str:
+    """Nennt die Version des Pakets -- so, wie der Tag auf GitHub heisst.
+
+    Aus `version = "0.1.2"` in `pyproject.toml` wird `v0.1.2`. Dieselbe
+    Angabe traegt `update_space.py` ein, wenn es eine Version per git holt;
+    so erkennt es auch nach dem Entpacken einer `Space.zip`, dass nichts zu
+    tun ist. Ohne lesbare Angabe gilt Tag und Uhrzeit des Packens.
+    """
+    try:
+        with (root / "pyproject.toml").open("rb") as datei:
+            return f"v{tomllib.load(datei)['project']['version']}"
+    except (OSError, KeyError, tomllib.TOMLDecodeError):
+        return datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
 def manifest(chosen: list[tuple[Path, str]], version: str) -> str:
@@ -161,7 +172,7 @@ def build_folder(target: Path, root: Path = PROJECT_ROOT) -> PackageReport:
 
     ziel = target / MANIFEST
     ziel.parent.mkdir(parents=True, exist_ok=True)
-    ziel.write_text(manifest(chosen, package_version()), encoding="utf-8")
+    ziel.write_text(manifest(chosen, package_version(root)), encoding="utf-8")
 
     return PackageReport(target, len(chosen) + 1, total, missing_tools(root))
 
@@ -174,7 +185,9 @@ def build_zip(target: Path, root: Path = PROJECT_ROOT) -> PackageReport:
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
         for source, relative in chosen:
             archive.write(source, f"{PACKAGE_NAME}/{relative}")
-        archive.writestr(f"{PACKAGE_NAME}/{MANIFEST}", manifest(chosen, package_version()))
+        archive.writestr(
+            f"{PACKAGE_NAME}/{MANIFEST}", manifest(chosen, package_version(root))
+        )
 
     return PackageReport(
         target, len(chosen) + 1, target.stat().st_size, missing_tools(root)
