@@ -3,15 +3,15 @@
 Diese Anleitung richtet sich an die Systembetreuung. Lehrkräfte und
 Schüler:innen haben keine lokalen Administratorrechte.
 
-**Was verteilt wird:** der Ordner `Space` aus dem Paket `Space.zip`. Er ist der
+**Was verteilt wird:** der Ordner `SpaceProject` aus dem Paket `SpaceProject.zip`. Er ist der
 Arbeitsordner der Schüler:innen und enthält die Bibliothek PyFoot bereits. Das
 Paket bekommen Sie von der Lehrkraft; die neueste öffentliche Fassung liegt
 unter <https://github.com/SAE-GMO/pyfoot-space/releases> (oberster Eintrag,
-Datei `Space.zip`).
+Datei `SpaceProject.zip`).
 
 **Pfadangaben:** `<SPACE-ORDNER>` steht für den Ordner, in den das Paket
-entpackt wurde, z. B. `C:\Schule\Space`. Relative Pfade gelten ab dort:
-`tools\check_environment.py` ist also `C:\Schule\Space\tools\check_environment.py`.
+entpackt wurde, z. B. `C:\Schule\SpaceProject`. Relative Pfade gelten ab dort:
+`tools\check_environment.py` ist also `C:\Schule\SpaceProject\tools\check_environment.py`.
 
 ---
 
@@ -41,12 +41,12 @@ Hinweise wie Pylance, nur auf der Konsole — Schüler:innen rufen es über
 zusätzlich der Qualitätssicherung des Projekts selbst.
 
 **PyFoot wird NICHT installiert.** Die Lernbibliothek liegt als Ordner
-`pyfoot\` im Arbeitsordner `Space` und wird mit ihm verteilt. Das ist Absicht:
+`pyfoot\` im Arbeitsordner `SpaceProject` und wird mit ihm verteilt. Das ist Absicht:
 Die Bibliothek wird im Laufe des Schuljahres weiterentwickelt, und jede
 Änderung soll ohne Zutun des Supports möglich sein — es genügt, den Ordner
-`Space` auszutauschen.
+`SpaceProject` auszutauschen.
 
-**Nicht nötig:** Der Ordner `Space` wird **nicht** installiert. Er läuft direkt,
+**Nicht nötig:** Der Ordner `SpaceProject` wird **nicht** installiert. Er läuft direkt,
 sobald Python, `pygame` und `mypy` vorhanden sind. Es sind keine
 Systemdienste, keine Registry-Einträge und keine Umgebungsvariablen außer dem
 PATH-Eintrag von Python erforderlich.
@@ -339,7 +339,7 @@ Schließen mit `Esc`. Damit ist der Arbeitsplatz einsatzbereit.
 | `python` öffnet den Microsoft Store | App-Ausführungsalias aktiv | siehe Hinweis in Abschnitt 3 |
 | `'python' is not recognized` | PATH-Eintrag fehlt | Abschnitt 3, „PATH prüfen" |
 | `ModuleNotFoundError:`<br>`No module named 'pygame'` | Paket fehlt oder in anderem Python installiert | `python -m pip install pygame` mit **demselben** `python` wie im Fehler |
-| `ModuleNotFoundError:`<br>`No module named 'pyfoot'` | der mitgelieferte Ordner `pyfoot\` fehlt im Arbeitsordner | Ordner `Space` vollständig neu verteilen |
+| `ModuleNotFoundError:`<br>`No module named 'pyfoot'` | der mitgelieferte Ordner `pyfoot\` fehlt im Arbeitsordner | Ordner `SpaceProject` vollständig neu verteilen |
 | `ModuleNotFoundError:`<br>`No module named 'space'` | Konsole steht im falschen Ordner | `cd` in den Projektordner |
 | `ModuleNotFoundError:`<br>`No module named 'space'`, obwohl der Ordner da ist | **der Unterordner heißt `Space` statt `space`.** Beim Entpacken oder Verschieben schreibt Windows Ordnernamen mitunter groß. Der Dateidienst ist zwar groß-klein-blind, Python prüft die Schreibung aber genau | Unterordner in Kleinbuchstaben umbenennen — siehe Hinweis unter der Tabelle |
 | Play-Knopf scheitert, Terminal funktioniert | VS Code nutzt eine andere Python-Version, oft ein leeres `.venv` | *Strg + Umschalt + P*, dann *Python: Interpreter auswählen* |
@@ -397,8 +397,10 @@ python -c "from pyfoot.editor import source; print(source.find_editor())"
 
 ### Wenn ein Ordner plötzlich großgeschrieben ist
 
-Der Projektordner heißt `Space`, der Paketordner darin `space` — klein. Beim
-Entpacken und Verschieben kann Windows daraus `Space` machen. Sichtbar ändert
+Der Paketordner `space` ist kleingeschrieben. Beim Entpacken und Verschieben
+kann Windows daraus `Space` machen — vor allem, wenn ein Ordner gleichen
+Namens darüber liegt. Deshalb heißt der Projektordner seit November 2026
+`SpaceProject`; ältere Pakete hießen noch `Space`. Sichtbar ändert
 sich fast nichts, und der Dateidienst stört sich nicht daran; **Python schon.**
 Die Meldung nennt dann nur das fehlende Modul, nicht den Grund.
 
@@ -418,4 +420,4 @@ Rename-Item Space -NewName zwischenschritt; Rename-Item zwischenschritt -NewName
 
 Danach zeigt `Get-ChildItem -Directory` den Namen klein. Denselben Weg gibt es
 für `ships`, `levels` und `pyfoot` — alle vier sind kleingeschrieben, nur der
-Projektordner darüber heißt `Space`.
+Projektordner darüber heißt `SpaceProject`.

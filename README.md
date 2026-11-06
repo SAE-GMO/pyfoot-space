@@ -13,7 +13,7 @@ dem im Unterricht gearbeitet wird.**
 Wer nur unterrichten oder lernen will, braucht dieses Repository nicht zu
 klonen. Unter **Releases**
 (<https://github.com/SAE-GMO/pyfoot-space/releases>) liegt beim neuesten
-Eintrag `Space.zip`: herunterladen, entpacken, fertig -- die Bibliothek PyFoot
+Eintrag `SpaceProject.zip`: herunterladen, entpacken, fertig -- die Bibliothek PyFoot
 ist darin enthalten.
 
 Pfade in dieser Datei gelten ab dem Projektordner: `tools\check_environment.py`
@@ -135,7 +135,7 @@ baut dieses Werkzeug:
 python tools\build_student_package.py
 ```
 
-Es legt `dist\Space.zip` an -- mit `pyfoot/` in der festgelegten Version
+Es legt `dist\SpaceProject.zip` an -- mit `pyfoot/` in der festgelegten Version
 (fehlt es, wird es vorher geholt), `space/`, `ships/`, `levels/`, `docs/`,
 den beiden Startdateien, den Lizenzhinweisen und den Werkzeugen, die in der
 Anleitung stehen. **Ohne `tests/`** und ohne die Werkzeuge der Lehrkraft.
@@ -163,7 +163,7 @@ die er festlegt, in einen temporaeren Ordner und baut daraus das Paket -- mit
 Release; im Manifest steht dann der Tag als Version. Das Repository ist
 oeffentlich, `git` fragt nicht nach einer Anmeldung. Ohne `git` oder Netz
 nennt das Werkzeug den Grund; dann geht es mit einer heruntergeladenen
-`Space.zip` als Pfad.
+`SpaceProject.zip` als Pfad.
 
 Eine neue Version erreicht die Schueler:innen also, sobald ihr Tag auf GitHub
 steht (siehe „Automatische Pruefung und Release").
@@ -195,7 +195,7 @@ Vor jeder Aenderung legt das Werkzeug ein Backup des ganzen Projekts unter
 Tests und Typpruefung laufen (`.github/workflows/tests.yml`, Windows,
 Python 3.11 und 3.13). Der Haken am Commit zeigt das Ergebnis.
 
-**Bei jedem neuen Tag** `v<version>` baut GitHub `Space.zip` und haengt es an
+**Bei jedem neuen Tag** `v<version>` baut GitHub `SpaceProject.zip` und haengt es an
 das Release (`.github/workflows/release.yml`). Vorher prueft es, dass der Tag
 zur `version` in `pyproject.toml` passt, und laesst alle Tests laufen; schlaegt
 etwas fehl, entsteht kein Release. Eine neue Version heisst also:
@@ -221,7 +221,7 @@ Tests in CodeLab aus der Abgabe nach; die Vorlage springt ein, wo eine Welt
 ein Raumschiff braucht, das die Abgabe nicht enthaelt (`Level0`). `pygame`
 gehoert nicht hinein -- es kommt ueber die Pakete des Kurses ins Image von
 CodeLab. Die Datei liegt bewusst **nicht** im Release, damit Schueler:innen
-dort nur `Space.zip` finden. Wer sie braucht, baut sie im passenden Stand
+dort nur `SpaceProject.zip` finden. Wer sie braucht, baut sie im passenden Stand
 selbst: das Repository beim gewuenschten Tag auschecken, `python
 tools\get_pyfoot.py`, dann den Befehl oben.
 

@@ -228,15 +228,22 @@ def test_kein_verweis_geht_ins_leere(package: Path) -> None:
 # ----------------------------------------------------------------------
 
 
-def test_das_zip_hat_einen_obersten_ordner(tmp_path: Path) -> None:
-    """Sonst verstreuten sich die Dateien beim Entpacken."""
+def test_das_zip_hat_keinen_obersten_ordner(tmp_path: Path) -> None:
+    """Befund vom 06.11.2026: *Alle extrahieren* legt den Ordner selbst an.
+
+    Mit eigenem obersten Ordner entstand `Space\\Space\\space`. Schob man den
+    mittleren Ordner nach oben, hiess `space` danach `Space` -- und Python fand
+    das Paket nicht mehr.
+    """
     ziel = build_zip(tmp_path / "Space.zip").target
 
     with zipfile.ZipFile(ziel) as archiv:
         namen = archiv.namelist()
 
     assert namen, "Das Archiv ist leer."
-    assert all(name.startswith("Space/") for name in namen)
+    assert "main_space.py" in namen
+    assert "space/__init__.py" in namen
+    assert not any(name.startswith("Space/") for name in namen)
 
 
 def test_das_zip_enthaelt_dieselben_dateien(tmp_path: Path) -> None:
@@ -244,7 +251,7 @@ def test_das_zip_enthaelt_dieselben_dateien(tmp_path: Path) -> None:
     archiv_pfad = build_zip(tmp_path / "Space.zip").target
 
     with zipfile.ZipFile(archiv_pfad) as archiv:
-        im_archiv = {name[len("Space/") :] for name in archiv.namelist()}
+        im_archiv = set(archiv.namelist())
     im_ordner = {p.relative_to(ordner).as_posix() for p in ordner.rglob("*") if p.is_file()}
 
     assert im_archiv == im_ordner

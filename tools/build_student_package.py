@@ -10,8 +10,8 @@ festlegt; fehlt sie oder ist sie veraltet, wird sie vorher geholt
 (`tools/get_pyfoot.py`).
 
 Aufruf (im Projektordner):
-    python tools\\build_student_package.py                 -> dist\\Space.zip
-    python tools\\build_student_package.py --folder        -> dist\\Space\\
+    python tools\\build_student_package.py                 -> dist\\SpaceProject.zip
+    python tools\\build_student_package.py --folder        -> dist\\SpaceProject\\
     python tools\\build_student_package.py --out abgabe    -> anderer Zielort
 
 Aufgenommen wird nach einer **Erlaubnisliste**, nicht nach einer
@@ -68,7 +68,11 @@ SKIP_SUFFIXES = {".pyc", ".pyo", ".bak", ".tmp"}
 
 #: Name des obersten Ordners im Paket. Ohne ihn verstreuten sich die Dateien
 #: beim Entpacken.
-PACKAGE_NAME = "Space"
+#: Name des Projektordners und der ZIP-Datei. Bewusst nicht `Space`: Neben dem
+#: Paketordner `space` darin verwechselt Windows beim Verschieben sonst die
+#: Schreibweise, und Python findet `space` nicht mehr (Befund vom 06.11.2026).
+#: `update_space.py` sucht nach `Space*.zip` und findet so beide Namen.
+PACKAGE_NAME = "SpaceProject"
 
 
 class PackageReport(NamedTuple):
@@ -136,7 +140,7 @@ def package_version(root: Path = PROJECT_ROOT) -> str:
 
     Aus `version = "0.1.2"` in `pyproject.toml` wird `v0.1.2`. Dieselbe
     Angabe traegt `update_space.py` ein, wenn es eine Version per git holt;
-    so erkennt es auch nach dem Entpacken einer `Space.zip`, dass nichts zu
+    so erkennt es auch nach dem Entpacken einer `SpaceProject.zip`, dass nichts zu
     tun ist. Ohne lesbare Angabe gilt Tag und Uhrzeit des Packens.
     """
     try:
@@ -173,22 +177,27 @@ def build_folder(target: Path, root: Path = PROJECT_ROOT) -> PackageReport:
 
     ziel = target / MANIFEST
     ziel.parent.mkdir(parents=True, exist_ok=True)
-    ziel.write_text(manifest(chosen, package_version(root)), encoding="utf-8")
+    # newline: wie im ZIP, damit Ordner und Archiv Byte fuer Byte gleich sind.
+    ziel.write_text(manifest(chosen, package_version(root)), encoding="utf-8", newline="\n")
 
     return PackageReport(target, len(chosen) + 1, total, missing_tools(root))
 
 
 def build_zip(target: Path, root: Path = PROJECT_ROOT) -> PackageReport:
-    """Legt das Paket als ZIP-Datei an."""
+    """Legt das Paket als ZIP-Datei an -- ohne obersten Ordner.
+
+    Windows legt beim *Alle extrahieren* selbst einen Ordner mit dem Namen der
+    ZIP-Datei an. Ein eigener oberster Ordner im Archiv ergab daher doppelt
+    verschachtelte Ordner; wer den inneren dann nach oben schob, bekam den
+    Paketordner `space` unter falscher Schreibweise und Python fand ihn nicht.
+    """
     target.parent.mkdir(parents=True, exist_ok=True)
     chosen = collect(root)
 
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
         for source, relative in chosen:
-            archive.write(source, f"{PACKAGE_NAME}/{relative}")
-        archive.writestr(
-            f"{PACKAGE_NAME}/{MANIFEST}", manifest(chosen, package_version(root))
-        )
+            archive.write(source, relative)
+        archive.writestr(MANIFEST, manifest(chosen, package_version(root)))
 
     return PackageReport(
         target, len(chosen) + 1, target.stat().st_size, missing_tools(root)

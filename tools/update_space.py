@@ -4,7 +4,7 @@ Aufruf (im Projektordner):
 
     python tools\\update_space.py --dry-run        zeigt nur, was geschehen wuerde
     python tools\\update_space.py                  holt die neueste Version von GitHub
-    python tools\\update_space.py C:\\Pfad\\Space.zip   nimmt genau diese Datei
+    python tools\\update_space.py C:\\Pfad\\SpaceProject.zip   nimmt genau diese Datei
 
 **Woher die neue Version kommt.** Ohne Pfad fragt das Werkzeug per `git` bei
 GitHub nach dem neuesten Versions-Tag (`v0.1.1` usw.), holt diesen Stand und
@@ -12,7 +12,7 @@ die PyFoot-Version, die er festlegt, und baut daraus das Paket -- mit dem
 Werkzeug aus genau diesem Stand, also so, wie es auch im Release liegt. Das
 Repository ist oeffentlich; eine Anmeldung ist nicht noetig. Geht das nicht
 (kein `git`, kein Netz), nennt das Werkzeug den Grund; dann hilft der Weg
-ueber eine heruntergeladene `Space.zip`.
+ueber eine heruntergeladene `SpaceProject.zip`.
 
 **Was angefasst wird und was nicht.** Jedes Paket bringt ein Manifest mit
 (`tools/paket.json`): darin steht zu jeder Datei eine Pruefsumme. Beim
@@ -75,7 +75,7 @@ STUDENT_FOLDERS = ("ships/", "levels/")
 #: Was nicht mit ins Backup wandert -- Zwischenstaende und alte Backups.
 SKIP_NAMES = {"__pycache__", ".mypy_cache", ".pytest_cache", ".venv", "backup", "dist"}
 
-#: Ordner, in denen nach einer `Space.zip` gesucht wird, wenn GitHub nicht
+#: Ordner, in denen nach einer `SpaceProject.zip` gesucht wird, wenn GitHub nicht
 #: erreichbar ist -- fuer den Hinweis, wie es trotzdem geht.
 SEARCH_FOLDERS = [Path.home() / "Downloads", Path.home() / "Desktop", Path.cwd()]
 
@@ -148,7 +148,8 @@ def manifest_of(files: dict[str, bytes], version: str) -> str:
 def package_files(source: Path) -> dict[str, bytes]:
     """Liest ein Paket -- als ZIP-Datei oder als Ordner.
 
-    Ein ZIP traegt oben den Ordner `Space/`; der wird abgeschnitten, damit die
+    Seit November 2026 hat das ZIP keinen obersten Ordner mehr; aeltere tragen
+    oben `Space/`. Ein solcher gemeinsamer Ordner wird abgeschnitten, damit die
     Pfade zu denen im Projekt passen.
 
     Raises:
@@ -530,10 +531,12 @@ def fetch_package(
          "--folder", "--out", str(ziel)],
         space,
     )
-    paket = ziel / "Space"
-    if not paket.is_dir():
-        raise FetchFailed(f"{tag}: Das Paket wurde nicht gebaut.")
-    return paket
+    # Der Ordner heisst seit November 2026 SpaceProject, vorher Space.
+    for name in ("SpaceProject", "Space"):
+        paket = ziel / name
+        if paket.is_dir():
+            return paket
+    raise FetchFailed(f"{tag}: Das Paket wurde nicht gebaut.")
 
 
 # ----------------------------------------------------------------------
@@ -561,7 +564,7 @@ def main(arguments: list[str]) -> int:
     )
     parser.add_argument(
         "quelle", nargs="?",
-        help="Space.zip oder ein Ordner; ohne Angabe die neueste Version von GitHub",
+        help="SpaceProject.zip oder ein Ordner; ohne Angabe die neueste Version von GitHub",
     )
     parser.add_argument(
         "--dry-run", action="store_true", help="nur zeigen, was geschehen wuerde"
@@ -648,9 +651,9 @@ def _from_github(alte_version: str) -> tuple[str, str, dict[str, bytes]] | int:
             files = package_files(fetch_package(repository, tag, Path(zwischen)))
     except (FetchFailed, ValueError) as fehler:
         print(f"Die neue Version liess sich nicht von GitHub holen: {fehler}")
-        print("Stattdessen geht es mit einer heruntergeladenen Space.zip:")
+        print("Stattdessen geht es mit einer heruntergeladenen SpaceProject.zip:")
         zip_datei = find_package()
-        beispiel = zip_datei if zip_datei is not None else Path("C:/Pfad/Space.zip")
+        beispiel = zip_datei if zip_datei is not None else Path("C:/Pfad/SpaceProject.zip")
         print(f"    python tools\\update_space.py {beispiel}")
         return 1
     return f"{repository} ({tag})", tag, files

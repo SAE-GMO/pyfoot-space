@@ -87,6 +87,25 @@ def test_der_oberste_ordner_des_archivs_faellt_weg(tmp_path: Path) -> None:
     assert sorted(package_files(ziel)) == ["main_space.py", "ships/normal_spaceship.py"]
 
 
+def test_ein_archiv_ohne_obersten_ordner_bleibt_wie_es_ist(tmp_path: Path) -> None:
+    """So sieht `Space.zip` ab 0.1.5 aus -- der Ordner `space` darf nicht wegfallen."""
+    ziel = tmp_path / "Space.zip"
+    with zipfile.ZipFile(ziel, "w") as archive:
+        archive.writestr("main_space.py", "start\n")
+        archive.writestr("space/__init__.py", "\n")
+
+    assert sorted(package_files(ziel)) == ["main_space.py", "space/__init__.py"]
+
+
+def test_das_gebaute_paket_wird_vollstaendig_gelesen(tmp_path: Path) -> None:
+    from build_student_package import build_folder, build_zip
+
+    archiv = package_files(build_zip(tmp_path / "Space.zip").target)
+    ordner = package_files(build_folder(tmp_path / "Space").target)
+
+    assert archiv == ordner
+
+
 def test_ein_leeres_paket_wird_gemeldet(tmp_path: Path) -> None:
     ziel = tmp_path / "leer.zip"
     with zipfile.ZipFile(ziel, "w"):

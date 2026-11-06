@@ -2,23 +2,23 @@
 
 Kurzanleitung für die Arbeit mit dem Projekt.
 
-Das Projekt kommt als Datei `Space.zip` — aus Moodle oder von
+Das Projekt kommt als Datei `SpaceProject.zip` — aus Moodle oder von
 <https://github.com/SAE-GMO/pyfoot-space/releases>, dort beim obersten
 Eintrag. Herunterladen und entpacken.
 
 ## 1. Einmal einrichten
 
 1. **VS Code öffnen**, dann *Datei*, dann *Ordner öffnen…* und den Ordner
-   `Space` auswählen — dort, wo du das Paket entpackt hast, zum Beispiel:
+   `SpaceProject` auswählen — dort, wo du das Paket entpackt hast, zum Beispiel:
 
    ```
-   H:\Informatik\Space
+   H:\Informatik\SpaceProject
    ```
 
    Wichtig: den **ganzen Ordner** öffnen, nicht eine einzelne Datei. Nur dann
    findet Python die Bausteine des Projekts.
 
-   `Space` ist dein Arbeitsordner. Alles Nötige liegt darin — auch die
+   `SpaceProject` ist dein Arbeitsordner. Alles Nötige liegt darin — auch die
    Bibliothek `pyfoot\`, die du nie anfassen musst.
 
 2. Wenn VS Code unten rechts nach der Python-Erweiterung fragt: installieren.
@@ -33,11 +33,11 @@ Eintrag. Herunterladen und entpacken.
 
 4. Ein Terminal öffnen: *Terminal*, dann *Neues Terminal*.
    Prüfe die Zeile links vom Eingabecursor — dort muss
-   `...\Space` stehen. Falls nicht, wechsle dorthin — mit deinem Speicherort
+   `...\SpaceProject` stehen. Falls nicht, wechsle dorthin — mit deinem Speicherort
    statt `H:\Informatik`:
 
    ```bash
-   cd H:\Informatik\Space
+   cd H:\Informatik\SpaceProject
    ```
 
 5. Prüfen, ob alles Nötige vorhanden ist:
@@ -74,17 +74,17 @@ Eintrag. Herunterladen und entpacken.
    `Esc` oder über das Fensterkreuz.
 
 > Deine Lösungen musst du nicht installieren — du schreibst sie einfach in den
-> Ordner `Space` und startest sie dort.
+> Ordner `SpaceProject` und startest sie dort.
 
 > Die Befehle in dieser Anleitung setzen voraus, dass das Terminal im Ordner
-> `Space` steht. Ausnahme: Die Skripte im Ordner `tools\` finden das Projekt
+> `SpaceProject` steht. Ausnahme: Die Skripte im Ordner `tools\` finden das Projekt
 > selbst und lassen sich von überall aufrufen.
 
 ## 2. Wo liegt was
 
-Alle Angaben ab hier beziehen sich auf den Projektordner `Space`:
+Alle Angaben ab hier beziehen sich auf den Projektordner `SpaceProject`:
 `ships\normal_spaceship.py` meint die Datei `normal_spaceship.py` im Ordner
-`ships` darin — egal, wo `Space` bei dir liegt.
+`ships` darin — egal, wo `SpaceProject` bei dir liegt.
 
 | Ordner | Inhalt |
 | --- | --- |
@@ -339,63 +339,81 @@ Meldungen verhindern nichts, sie sind ein Hinweis.
 
 ## 7. Wenn etwas schiefgeht
 
-- **Das Fehlerfenster erscheint** — dein Programm hat etwas versucht, was nicht
-  geht: aus der Welt hinausfliegen, gegen einen Asteroiden fliegen, ein PowerUp
-  aufsammeln, wo keines liegt — oder im Code steckt ein Fehler, etwa ein
-  Tippfehler im Namen. Das Programm hält an, das Fenster bleibt offen.
+### Das Fehlerfenster erscheint
 
-  | Taste | Wirkung |
-  | --- | --- |
-  | `E` | **Zur Zeile** — öffnet VS Code an der Stelle in deiner Datei |
-  | `R` | **Zurücksetzen** — liest geänderte Dateien neu ein und beginnt von vorn |
-  | `Esc` | schließt nur das Fehlerfenster |
+Dein Programm hat etwas versucht, was nicht geht: aus der Welt hinausfliegen,
+gegen einen Asteroiden fliegen, ein PowerUp aufsammeln, wo keines liegt — oder
+im Code steckt ein Fehler, etwa ein Tippfehler im Namen. Das Programm hält an,
+das Fenster bleibt offen.
 
-  Also: Fehler lesen, `E`, Zeile korrigieren, zurück ins Fenster, `R`, Start.
-  Dieselbe Meldung steht auch im Terminal; dort führt ein Strg+Klick auf
-  `ships/normal_spaceship.py:12` direkt zur Zeile.
+<!-- cols: 15 85 kompakt -->
 
-  Bleibt das Fehlerfenster nach `R` stehen, ist die Datei noch nicht in
-  Ordnung — dann läuft der alte Stand weiter, bis der Fehler behoben ist.
-- **Der Editor startet gar nicht, im Terminal steht „Fehler vor dem Start“** —
-  eine deiner Dateien lässt sich nicht lesen, meist fehlt eine Klammer oder ein
-  Doppelpunkt. Unter `Stelle:` stehen Datei und Zeile.
-- **`ModuleNotFoundError: No module named 'pyfoot'`** — das Terminal steht im
-  falschen Ordner. Siehe Schritt 4 der Einrichtung.
-- **Der Play-Knopf meldet ein fehlendes Paket, das Terminal aber nicht** — VS
-  Code hat eine andere Python-Version ausgewählt. Siehe Schritt 3 der
-  Einrichtung.
+| Taste | Wirkung |
+| --- | --- |
+| `E` | **Zur Zeile** — öffnet VS Code an der Stelle in deiner Datei |
+| `R` | **Zurücksetzen** — liest geänderte Dateien neu ein und beginnt von vorn |
+| `Esc` | schließt nur das Fehlerfenster |
 
-  Ein häufiger Sonderfall: Im Projektordner liegt ein Ordner `.venv`. Das ist
-  eine eigene, abgeschottete Python-Umgebung. Hat VS Code diese ausgewählt,
-  aber es wurde nie etwas hineininstalliert, fehlt dort alles. Entweder eine
-  andere Version wählen oder die Pakete dort nachinstallieren:
+Also: Fehler lesen, `E`, Zeile korrigieren, zurück ins Fenster, `R`, Start.
+Dieselbe Meldung steht auch im Terminal; dort führt ein Strg+Klick auf
+`ships/normal_spaceship.py:12` direkt zur Zeile.
 
-  ```bash
-  .venv\Scripts\python.exe -m pip install pygame mypy pytest
-  ```
+Bleibt das Fehlerfenster nach `R` stehen, ist die Datei noch nicht in
+Ordnung — dann läuft der alte Stand weiter, bis der Fehler behoben ist.
 
-- **PowerShell fragt: „Führen Sie ausschließlich vertrauenswürdige Skripts
-  aus"** — Windows markiert alles, was aus dem Internet kommt. Betrifft meist
-  VS Code selbst, wenn es als ZIP heruntergeladen wurde. Die Markierung lässt
-  sich entfernen (der Pfad steht in der Warnung):
+### Der Editor startet gar nicht, im Terminal steht „Fehler vor dem Start“
 
-  ```bash
-  Unblock-File -Path "PFAD\AUS\DER\WARNUNG.ps1"
-  ```
+Eine deiner Dateien lässt sich nicht lesen, meist fehlt eine Klammer oder ein
+Doppelpunkt. Unter `Stelle:` stehen Datei und Zeile.
 
-  Das braucht keine Administratorrechte.
-- **`Duplicate module named "__main__"`** bei einer Typprüfung — ebenfalls der
-  falsche Ordner. Diese Meldung von mypy ist irreführend, gemeint ist „Pfad
-  nicht gefunden". Die Skripte unter `tools\` funktionieren dagegen von
-  überall.
-- **Das Fenster reagiert nicht** — vermutlich eine Endlosschleife. Fenster
-  schließen, Schleifenbedingung prüfen.
-- **Zu schnell oder zu langsam?** Vor `run()` einfügen:
+### `ModuleNotFoundError: No module named 'pyfoot'`
 
-  ```python
-  from pyfoot import get_engine
-  get_engine().step_duration = 0.4   # Sekunden pro Schritt
-  ```
+Das Terminal steht im falschen Ordner. Siehe Schritt 4 der Einrichtung.
+
+### Der Play-Knopf meldet ein fehlendes Paket, das Terminal aber nicht
+
+VS Code hat eine andere Python-Version ausgewählt. Siehe Schritt 3 der
+Einrichtung.
+
+Ein häufiger Sonderfall: Im Projektordner liegt ein Ordner `.venv`. Das ist
+eine eigene, abgeschottete Python-Umgebung. Hat VS Code diese ausgewählt, aber
+es wurde nie etwas hineininstalliert, fehlt dort alles. Entweder eine andere
+Version wählen oder die Pakete dort nachinstallieren:
+
+```bash
+.venv\Scripts\python.exe -m pip install pygame mypy pytest
+```
+
+### PowerShell fragt: „Führen Sie ausschließlich vertrauenswürdige Skripts aus"
+
+Windows markiert alles, was aus dem Internet kommt. Betrifft meist VS Code
+selbst, wenn es als ZIP heruntergeladen wurde. Die Markierung lässt sich
+entfernen (der Pfad steht in der Warnung):
+
+```bash
+Unblock-File -Path "PFAD\AUS\DER\WARNUNG.ps1"
+```
+
+Das braucht keine Administratorrechte.
+
+### `Duplicate module named "__main__"` bei einer Typprüfung
+
+Ebenfalls der falsche Ordner. Diese Meldung von mypy ist irreführend, gemeint
+ist „Pfad nicht gefunden". Die Skripte unter `tools\` funktionieren dagegen von
+überall.
+
+### Das Fenster reagiert nicht
+
+Vermutlich eine Endlosschleife. Fenster schließen, Schleifenbedingung prüfen.
+
+### Zu schnell oder zu langsam?
+
+Vor `run()` einfügen:
+
+```python
+from pyfoot import get_engine
+get_engine().step_duration = 0.4   # Sekunden pro Schritt
+```
 
 ## 8. Eine neue Version holen
 
@@ -437,20 +455,20 @@ als ZIP-Datei unter `backup\`. Falls doch etwas schiefgeht, packst du sie
 einfach wieder aus.
 
 **Kommt das Werkzeug nicht an GitHub heran** — kein `git`, kein Netz —,
-nennt es den Grund. Dann geht es auch mit `Space.zip` aus Moodle oder von
+nennt es den Grund. Dann geht es auch mit `SpaceProject.zip` aus Moodle oder von
 <https://github.com/SAE-GMO/pyfoot-space/releases>: Datei herunterladen,
 **nicht** auspacken, und den Pfad dazu angeben:
 
 ```bash
-python tools\update_space.py C:\Users\DEINNAME\Downloads\Space.zip
+python tools\update_space.py C:\Users\DEINNAME\Downloads\SpaceProject.zip
 ```
 
-> **Sucht das Werkzeug nur nach `Space.zip` und fragt nicht bei GitHub?**
+> **Sucht das Werkzeug nur nach `SpaceProject.zip` und fragt nicht bei GitHub?**
 > Dann hat dein Projekt noch eine ältere Fassung. Frische einmal mit
-> `Space.zip` auf wie oben — dabei kommt auch die neue Fassung des Werkzeugs.
+> `SpaceProject.zip` auf wie oben — dabei kommt auch die neue Fassung des Werkzeugs.
 > Danach geht es über GitHub.
 >
-> **Fehlt `tools\update_space.py` ganz**, packe `Space.zip` einmal irgendwo
+> **Fehlt `tools\update_space.py` ganz**, packe `SpaceProject.zip` einmal irgendwo
 > aus und kopiere daraus die Datei `tools\update_space.py` in deinen
 > Projektordner nach `tools\`.
 
@@ -495,7 +513,7 @@ python tools\build_docs.py
 python tools\build_student_package.py
 ```
 
-Es legt `dist\Space.zip` an, mit PyFoot in der festgelegten Version, aber
+Es legt `dist\SpaceProject.zip` an, mit PyFoot in der festgelegten Version, aber
 **ohne `tests\`** und ohne die Werkzeuge, die nur du brauchst. Die
 Musterlösungen liegen ohnehin nicht in Space, sondern in `pyfoot-course`; ein
 Test prüft trotzdem, dass keine mitgeht.
