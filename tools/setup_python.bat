@@ -219,12 +219,8 @@ echo   - in VS Code: Strg+Umschalt+P, "Python: Interpreter auswählen",
 echo     dort diese Version nehmen:
 echo       %PYEXE%
 echo ================================================================
-if exist "%~dp0check_environment.py" (
-    echo.
-    echo Zum Schluss die Prüfung des Projekts:
-    echo.
-    "%PYEXE%" "%~dp0check_environment.py"
-)
+rem Bewusst ohne check_environment.py: Zu Hause kommt VS Code erst nach diesem
+rem Skript (AB01d), die Pruefung meldete es sonst als fehlend.
 goto :end
 
 :no_python
