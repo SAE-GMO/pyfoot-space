@@ -8,6 +8,7 @@ zum Kursinhalt und bleibt hier.
 from __future__ import annotations
 
 from .space_world import SpaceWorld
+from .start_marker import start_background
 
 __all__ = ["StartWorld"]
 
@@ -22,6 +23,9 @@ class StartWorld(SpaceWorld):
 
     Einzige Ausnahme ist `Level0`: Dort steht von Anfang an ein Raumschiff,
     damit der Einstieg ohne Vorbereitung gelingt.
+
+    Das Feld `START` ist im Hintergrund markiert, mit einem Pfeil in
+    Blickrichtung (siehe `start_marker.py`).
     """
 
     __slots__ = ()
@@ -31,6 +35,9 @@ class StartWorld(SpaceWorld):
 
     def __init__(self, width: int, height: int) -> None:
         super().__init__(width, height)
+        self.set_background(
+            start_background(width, height, SpaceWorld.CELL_SIZE, self.START)
+        )
         self.prepare()
 
     def prepare(self) -> None:

@@ -136,7 +136,7 @@ def test_pyfoot_holen_fragt_nicht_ohne_terminal(monkeypatch: pytest.MonkeyPatch)
 def test_der_ordner_tools_gilt_als_projektordner(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """Rechtsklick auf `tools` -> 'In integriertem Terminal oeffnen' (HA01)."""
+    """Rechtsklick auf `tools` -> 'In integriertem Terminal oeffnen' (AB01d)."""
     monkeypatch.chdir(Path(env.PROJECT_ROOT) / "tools")
 
     assert env.check_project_folder() is True
@@ -150,6 +150,32 @@ def test_mindestversion_passt_zum_projekt() -> None:
     ).read_text(encoding="utf-8")
     assert 'requires-python = ">=3.11"' in pyproject
     assert env.MINIMUM_PYTHON == (3, 11)
+
+
+def test_zu_neues_python_ohne_pygame_wird_erklaert(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Befund vom 06.11.2026: Python 3.15, pip scheitert beim Uebersetzen von pygame."""
+    monkeypatch.setattr(sys, "version_info", (3, 15, 2, "final", 0))
+    monkeypatch.setattr(env, "pygame_installed", lambda: False)
+
+    assert env.check_python()
+
+    ausgabe = capsys.readouterr().out
+    assert "zu neu fuer pygame" in ausgabe
+    assert "setup_python.bat" in ausgabe
+
+
+def test_zu_neues_python_mit_pygame_ist_in_ordnung(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Gibt es pygame spaeter auch fuer neuere Versionen, stoert nichts."""
+    monkeypatch.setattr(sys, "version_info", (3, 15, 2, "final", 0))
+    monkeypatch.setattr(env, "pygame_installed", lambda: True)
+
+    assert env.check_python()
+
+    assert "zu neu" not in capsys.readouterr().out
 
 
 def test_pflichtpakete_sind_vollstaendig() -> None:

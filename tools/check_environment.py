@@ -44,6 +44,11 @@ os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 
 MINIMUM_PYTHON = (3, 11)
 
+#: Die neueste Python-Version, fuer die es pygame als fertiges Paket gibt
+#: (pygame 2.6.1, Stand 11/2026). Bei neueren Versionen versucht pip, pygame
+#: selbst zu uebersetzen, und scheitert. Gleicher Wert in `setup_python.bat`.
+NEWEST_PYTHON_FOR_PYGAME = (3, 13)
+
 #: Ohne diese Pakete laeuft das Projekt nicht.
 #: PyFoot wird nicht installiert, sondern liegt als Ordner im Projekt.
 #: Geprueft wird trotzdem, ob es sich einbinden laesst -- sonst fehlt oder
@@ -87,12 +92,29 @@ def check_python() -> bool:
     found = "{0}.{1}.{2}".format(version[0], version[1], version[2])
     needed = "{0}.{1}".format(MINIMUM_PYTHON[0], MINIMUM_PYTHON[1])
 
+    if version[:2] > NEWEST_PYTHON_FOR_PYGAME and not pygame_installed():
+        newest = "{0}.{1}".format(*NEWEST_PYTHON_FOR_PYGAME)
+        line(WARN, "Python " + found, "zu neu fuer pygame, passend: " + needed + " bis " + newest)
+        print("         pygame gibt es bisher nur bis Python " + newest + ". Installiere")
+        print("         zusaetzlich Python " + newest + " (die neue Version darf bleiben),")
+        print("         am einfachsten mit:  tools\\setup_python.bat")
+        return True
+
     if version[:2] >= MINIMUM_PYTHON:
         line(OK, "Python " + found, "benoetigt: " + needed + " oder neuer")
         return True
 
     line(MISSING, "Python " + found, "zu alt, benoetigt: " + needed + " oder neuer")
     return False
+
+
+def pygame_installed() -> bool:
+    """Ob sich pygame einbinden laesst."""
+    try:
+        importlib.import_module("pygame")
+    except Exception:
+        return False
+    return True
 
 
 def other_python_installations() -> list[str]:

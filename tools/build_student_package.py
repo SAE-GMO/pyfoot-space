@@ -51,6 +51,7 @@ FILES = ["main_space.py", "main_editor.py", "README.md", "LICENSE", "pyproject.t
 #: -- etwa `check_project.py` und `get_pyfoot.py` -- bleibt draussen.
 TOOLS = [
     "check_environment.py",
+    "setup_python.bat",
     "check_code.py",
     "update_space.py",
     "mypy_student.ini",

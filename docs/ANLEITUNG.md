@@ -48,7 +48,17 @@ Kurzanleitung für die Arbeit mit dem Projekt.
 
    Fehlen Pakete, **fragt** die Prüfung, ob sie sie gleich installieren soll.
    An der Schule mit `n` antworten; auf dem eigenen Rechner darfst du mit `j`
-   bestätigen, danach prüft sie von selbst noch einmal (siehe `HA01`).
+   bestätigen, danach prüft sie von selbst noch einmal (siehe die erste Hausaufgabe, `AB01d`).
+
+   **Auf dem eigenen Rechner** hilft bei Problemen mit Python ein Doppelklick
+   auf `tools\setup_python.bat`. Das Skript schaut, ob `python` den Microsoft
+   Store öffnet, statt Python zu starten. Es trägt Python in den PATH deines
+   Benutzerkontos ein und installiert die fehlenden Pakete. Danach VS Code
+   schließen und neu öffnen. Nur prüfen, ohne etwas zu ändern:
+
+   ```bash
+   tools\setup_python.bat /check
+   ```
 
 6. Testen, ob alles läuft:
 
@@ -208,6 +218,9 @@ der Bedienleiste steht dann zum Beispiel `Neu eingebunden: normal_spaceship.py`
 - Welche Welt du brauchst, steht in der Aufgabe. **Rechtsklick** auf ihren
   Namen im Klassenbaum, dann `Level1PowerUpRow() anzeigen`. Danach setzt du
   dein Raumschiff hinein (siehe unten) — nur `Level0` bringt eines mit.
+- Wohin, zeigt die Welt selbst: Das **Startfeld** hat einen blauen Rahmen mit
+  einem Pfeil nach rechts. Dorthin kommt dein Raumschiff, und in diese
+  Richtung schaut es am Anfang.
 
 Eigene Methoden darfst du jederzeit ergänzen. Das ist sogar erwünscht: Sobald du
 dieselben Zeilen mehrfach schreibst, lohnt sich eine eigene Methode.
@@ -500,7 +513,7 @@ Zielbild eines Arbeitsblatts aus einer Musterlösung erzeugen (im Ordner
 `pyfoot-course`):
 
 ```bash
-python tools\render_figure.py test_course_tasks:WaveShip bild.png
+python tools\render_figure.py test_block01:WaveLineFigure bild.png
 ```
 
 Klassendiagramm des Projekts erzeugen (rein lokal, kein Datenversand):
@@ -580,7 +593,7 @@ schließt es wieder — das Fenster bleibt dabei offen.
 
 Der erste Eintrag zeigt genau den Ausdruck, den man auch selbst schreibt:
 `PowerUp` ist der Typ, `PowerUp()` ein einzelnes Objekt — die Unterscheidung
-aus `AB02_Klassen_NeueRaumschiffe`.
+aus `AB02b_Infoblatt_Klassen`.
 
 **Welt wechseln:** Ein Rechtsklick auf eine Welt in der Liste zeigt diese Welt
 an — praktisch, um im Unterricht schnell zwischen den Aufgabenwelten zu

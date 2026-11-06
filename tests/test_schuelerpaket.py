@@ -31,9 +31,25 @@ from build_student_package import (  # noqa: E402
     package_version,
 )
 
-#: Namen, die im Paket nichts zu suchen haben. Sie stehen fuer die
-#: Musterloesungen der beiden Hausaufgaben aus M5.
-SOLUTIONS = ["WaveShip", "SquareShip", "ChainShip", "RowHarvester", "FigureEightShip"]
+#: Namen, die im Paket nichts zu suchen haben: die Klassen der
+#: Musterloesungen (heute in pyfoot-course, `tests/solutions/`).
+SOLUTIONS = [
+    "WaveShip",
+    "SquareShip",
+    "ChainShip",
+    "RowHarvester",
+    "FigureEightShip",
+    "NormalSpaceshipSolution",
+    "EightFigure",
+    "WaveLineFigure",
+    "MoveShipSolution",
+    "SquareFigure",
+    "ChainFigure",
+    "ScoutShipSolution",
+    "LoopScoutSolution",
+    "FieldScoutSolution",
+    "CountingScoutSolution",
+]
 
 
 @pytest.fixture

@@ -202,6 +202,24 @@ etwas fehl, entsteht kein Release. Eine neue Version heisst also:
 2. `git tag -a v0.2.0 -m "Space 0.2.0"`,
 3. `git push origin v0.2.0`.
 
+## Kursbibliothek fuer CodeLab
+
+CodeLab (die Abgabeplattform der Schule) prueft die Loesungen der
+Schueler:innen automatisch. Jeder Testlauf braucht dafuer `pyfoot`, `space`
+und `levels` -- als **Kursbibliothek** in dem Format, das CodeLab vorgibt:
+
+```bash
+python tools\build_codelab_library.py
+```
+
+Das ergibt `dist\Space-CodeLab.zip`: oben `codelab-bibliothek.yaml` (Name,
+Version als Tag, Umgebung fuer pygame ohne Fenster), daneben `lib/`. `ships/`
+ist nur als Vorlage dabei (`lib/ships_template/`): Dieses Paket bilden die
+Tests in CodeLab aus der Abgabe nach; die Vorlage springt ein, wo eine Welt
+ein Raumschiff braucht, das die Abgabe nicht enthaelt (`Level0`). `pygame`
+gehoert nicht hinein -- es kommt ueber die Pakete des Kurses ins Image von
+CodeLab. Der Release-Workflow haengt die Datei bei jedem Tag mit an.
+
 ## Werkzeuge
 
 ```bash

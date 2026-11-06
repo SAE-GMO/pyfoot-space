@@ -190,6 +190,34 @@ def make_starfield(size: int = STARFIELD_SIZE, seed: int = 3) -> pygame.Surface:
     return surface
 
 
+#: Farbe der Startmarkierung: hell und kuehl, damit sie sich vom
+#: Sternenhimmel, vom tuerkisen PowerUp und vom grauen Asteroiden abhebt.
+START_COLOR: Rgba = (90, 205, 255, 210)
+
+
+def make_start_marker(size: int = CELL_SIZE) -> pygame.Surface:
+    """Zeichnet die Markierung des Startfelds: Rahmen und Pfeil nach rechts.
+
+    Nach rechts, weil ein neues Raumschiff in diese Richtung schaut. Der Pfeil
+    sitzt am rechten Rand: Steht das Raumschiff auf dem Feld, verdeckt es die
+    Mitte, die Spitze bleibt sichtbar. Ausserhalb von Rahmen und Pfeil ist das
+    Bild durchsichtig; darunter liegt der Sternenhimmel.
+    """
+    surface = _new_surface(size, size)
+    inset, line = 3, 3
+    frame = pygame.Rect(inset, inset, size - 2 * inset, size - 2 * inset)
+    pygame.draw.rect(surface, START_COLOR, frame, width=line, border_radius=6)
+
+    middle = size // 2
+    tip = size - inset - line - 1
+    back = tip - size // 6
+    half = size // 8
+    pygame.draw.polygon(
+        surface, START_COLOR, [(tip, middle), (back, middle - half), (back, middle + half)]
+    )
+    return surface
+
+
 def generate_all(target_dir: Path | None = None) -> dict[str, Path]:
     """Erzeugt alle Grafiken und speichert sie als PNG.
 
@@ -210,6 +238,7 @@ def generate_all(target_dir: Path | None = None) -> dict[str, Path]:
         "power_up.png": make_power_up(),
         "asteroid.png": make_asteroid(),
         "starfield.png": make_starfield(),
+        "start_marker.png": make_start_marker(),
     }
 
     written: dict[str, Path] = {}

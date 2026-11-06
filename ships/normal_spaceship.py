@@ -1,7 +1,6 @@
-"""Das Raumschiff fuer den Einstieg.
+"""Das Raumschiff fuer den Einstieg -- diese Datei gehoert dir.
 
-Diese Datei gehoert dir. Schreibe deine Anweisungen in `init` -- sie wird
-beim Start genau einmal ausgefuehrt, von oben nach unten.
+Jede Aufgabe hat ihre eigene Methode; `init` ruft die auf, an der du arbeitest.
 """
 
 from __future__ import annotations
@@ -14,13 +13,17 @@ __all__ = ["NormalSpaceship"]
 class NormalSpaceship(Spaceship):
     """Ein ganz normales Raumschiff."""
 
-    # Zaehlt die eigenen Attribute auf -- wie die Felder einer Klasse in Java.
-    # Fuer `self.counter` traegst du hier `("counter",)` ein.
     __slots__ = ()
 
     def init(self) -> None:
-        """Hier kannst du alle Anweisungen eintragen, die das Schiff ausfuehren soll."""
+        self.draw_letter()
+
+    def draw_letter(self) -> None:
+        """Aufgabe 1: der erste Buchstabe deines Vornamens aus PowerUps."""
         self.move()
         self.drop_power_up()
         self.move()
         self.turn_left()
+
+    def fly_eight(self) -> None:
+        """Aufgabe 2: die Acht aus dem Zielbild, ein PowerUp auf jedem Feld."""

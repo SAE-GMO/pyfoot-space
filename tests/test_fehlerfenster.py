@@ -297,7 +297,7 @@ WEITERARBEITEN = textwrap.dedent(
     engine._perform_reset()
     neu = schiff()
     print("NEUE_KLASSE", type(neu) is not type(alt))
-    print("NEUER_CODE", 20 in type(neu).init.__code__.co_consts)
+    print("NEUER_CODE", 20 in type(neu).draw_letter.__code__.co_consts)
     print("STATUS", engine.status)
 
     # 2. Ein Tippfehler macht die Datei unlesbar.
