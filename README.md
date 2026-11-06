@@ -11,8 +11,10 @@ dem im Unterricht gearbeitet wird.**
 ## Fuer den Unterricht: das fertige Paket
 
 Wer nur unterrichten oder lernen will, braucht dieses Repository nicht zu
-klonen. Unter **Releases** liegt `Space.zip`: entpacken, fertig -- die
-Bibliothek PyFoot ist darin enthalten.
+klonen. Unter **Releases**
+(<https://github.com/SAE-GMO/pyfoot-space/releases>) liegt beim neuesten
+Eintrag `Space.zip`: herunterladen, entpacken, fertig -- die Bibliothek PyFoot
+ist darin enthalten.
 
 Pfade in dieser Datei gelten ab dem Projektordner: `tools\check_environment.py`
 meint die Datei `check_environment.py` im Ordner `tools` darin, egal wo der
@@ -218,7 +220,10 @@ ist nur als Vorlage dabei (`lib/ships_template/`): Dieses Paket bilden die
 Tests in CodeLab aus der Abgabe nach; die Vorlage springt ein, wo eine Welt
 ein Raumschiff braucht, das die Abgabe nicht enthaelt (`Level0`). `pygame`
 gehoert nicht hinein -- es kommt ueber die Pakete des Kurses ins Image von
-CodeLab. Der Release-Workflow haengt die Datei bei jedem Tag mit an.
+CodeLab. Die Datei liegt bewusst **nicht** im Release, damit Schueler:innen
+dort nur `Space.zip` finden. Wer sie braucht, baut sie im passenden Stand
+selbst: das Repository beim gewuenschten Tag auschecken, `python
+tools\get_pyfoot.py`, dann den Befehl oben.
 
 ## Werkzeuge
 

@@ -1,6 +1,7 @@
-# Baut bei jedem neuen Tag v<version> das Schuelerpaket Space.zip und die
-# Kursbibliothek fuer CodeLab (Space-CodeLab.zip) und haengt beide an das
-# Release zu diesem Tag an.
+# Baut bei jedem neuen Tag v<version> das Schuelerpaket Space.zip und haengt
+# es an das Release zu diesem Tag an. Die Kursbibliothek fuer CodeLab gehoert
+# bewusst nicht dazu, damit Schueler:innen dort nur eine ZIP-Datei sehen; sie
+# wird bei Bedarf lokal gebaut (tools/build_codelab_library.py).
 #
 # Ablauf: Tag pruefen, festgelegte PyFoot-Version holen, testen, Paket bauen,
 # Release anlegen. Schlaegt ein Schritt fehl, entsteht kein Release.
@@ -60,16 +61,13 @@ jobs:
       - name: Schuelerpaket bauen
         run: python tools/build_student_package.py
 
-      - name: Kursbibliothek fuer CodeLab bauen
-        run: python tools/build_codelab_library.py
-
       - name: Release anlegen oder Datei ersetzen
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
           if gh release view "$TAG" > /dev/null 2>&1; then
-            gh release upload "$TAG" dist/Space.zip dist/Space-CodeLab.zip --clobber
+            gh release upload "$TAG" dist/Space.zip --clobber
           else
-            gh release create "$TAG" dist/Space.zip dist/Space-CodeLab.zip --title "Space ${TAG#v}" --generate-notes
+            gh release create "$TAG" dist/Space.zip --title "Space ${TAG#v}" --generate-notes
           fi

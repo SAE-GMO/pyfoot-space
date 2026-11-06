@@ -5,8 +5,9 @@ Schüler:innen haben keine lokalen Administratorrechte.
 
 **Was verteilt wird:** der Ordner `Space` aus dem Paket `Space.zip`. Er ist der
 Arbeitsordner der Schüler:innen und enthält die Bibliothek PyFoot bereits. Das
-Paket bekommen Sie von der Lehrkraft; eine öffentliche Fassung liegt unter
-*Releases* auf <https://github.com/SAE-GMO/pyfoot-space>.
+Paket bekommen Sie von der Lehrkraft; die neueste öffentliche Fassung liegt
+unter <https://github.com/SAE-GMO/pyfoot-space/releases> (oberster Eintrag,
+Datei `Space.zip`).
 
 **Pfadangaben:** `<SPACE-ORDNER>` steht für den Ordner, in den das Paket
 entpackt wurde, z. B. `C:\Schule\Space`. Relative Pfade gelten ab dort:

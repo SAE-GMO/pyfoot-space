@@ -2,6 +2,10 @@
 
 Kurzanleitung für die Arbeit mit dem Projekt.
 
+Das Projekt kommt als Datei `Space.zip` — aus Moodle oder von
+<https://github.com/SAE-GMO/pyfoot-space/releases>, dort beim obersten
+Eintrag. Herunterladen und entpacken.
+
 ## 1. Einmal einrichten
 
 1. **VS Code öffnen**, dann *Datei*, dann *Ordner öffnen…* und den Ordner
@@ -433,8 +437,9 @@ als ZIP-Datei unter `backup\`. Falls doch etwas schiefgeht, packst du sie
 einfach wieder aus.
 
 **Kommt das Werkzeug nicht an GitHub heran** — kein `git`, kein Netz —,
-nennt es den Grund. Dann geht es auch mit `Space.zip` aus Moodle: Datei
-herunterladen, **nicht** auspacken, und den Pfad dazu angeben:
+nennt es den Grund. Dann geht es auch mit `Space.zip` aus Moodle oder von
+<https://github.com/SAE-GMO/pyfoot-space/releases>: Datei herunterladen,
+**nicht** auspacken, und den Pfad dazu angeben:
 
 ```bash
 python tools\update_space.py C:\Users\DEINNAME\Downloads\Space.zip
