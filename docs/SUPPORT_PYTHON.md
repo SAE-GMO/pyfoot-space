@@ -9,9 +9,8 @@ und die Python-Pakete. Die Einrichtung des Editors steht in
 
 **Was verteilt wird:** der Ordner `SpaceProject` aus dem Paket `SpaceProject.zip`. Er ist der
 Arbeitsordner der Schüler:innen und enthält die Bibliothek PyFoot bereits. Das
-Paket bekommen Sie von der Lehrkraft; die neueste öffentliche Fassung liegt
-unter <https://github.com/SAE-GMO/pyfoot-space/releases> (oberster Eintrag,
-Datei `SpaceProject.zip`).
+Paket bekommen Sie von der Lehrkraft; die neueste öffentliche Fassung lädt
+dieser Link direkt herunter: [SpaceProject.zip](https://github.com/SAE-GMO/pyfoot-space/releases/latest/download/SpaceProject.zip).
 
 **Pfadangaben:** `<SPACE-ORDNER>` steht für den Ordner, in den das Paket
 entpackt wurde, z. B. `C:\Schule\SpaceProject`. Relative Pfade gelten ab dort:

@@ -102,6 +102,7 @@ __all__ = [
     "newest_tag",
     "latest_tag",
     "fetch_package",
+    "download_url",
 ]
 
 
@@ -590,9 +591,13 @@ def main(arguments: list[str]) -> int:
         neue_version = _version_of(files)
     else:
         geholt = _from_github(alte_version)
-        if isinstance(geholt, int):
+        if isinstance(geholt, Path):
+            files = package_files(geholt)
+            herkunft, neue_version = str(geholt), _version_of(files)
+        elif isinstance(geholt, int):
             return geholt
-        herkunft, neue_version, files = geholt
+        else:
+            herkunft, neue_version, files = geholt
 
     changes = plan(PROJECT_ROOT, files, bekannt)
 
@@ -628,14 +633,64 @@ def main(arguments: list[str]) -> int:
     return 0
 
 
-def _from_github(alte_version: str) -> tuple[str, str, dict[str, bytes]] | int:
+def download_url(repository: str) -> str:
+    """Der feste Link auf die `SpaceProject.zip` des neuesten Releases."""
+    return f"{repository.rstrip('/')}/releases/latest/download/SpaceProject.zip"
+
+
+def _ask(question: str) -> bool:
+    """Fragt mit j/N nach. Ohne Tastatur (umgeleitet, Tests) gilt: nein."""
+    if not sys.stdin or not sys.stdin.isatty():
+        return False
+    try:
+        return input(f"{question} [j/N] ").strip().lower() in ("j", "ja", "y", "yes")
+    except EOFError:
+        return False
+
+
+def _offer_local_package(repository: str, alte_version: str) -> Path | None:
+    """GitHub ging nicht: eine heruntergeladene ZIP anbieten, sonst den Weg zeigen.
+
+    Gefunden wird die neueste `Space*.zip` in Downloads, auf dem Desktop oder
+    im aktuellen Ordner. Mit "j" wird sie gleich verwendet (Wunsch der
+    Lehrkraft, 20.11.2026). Sonst stehen der Download-Link und der Befehl da --
+    mit dem echten Pfad zum Ordner Downloads statt eines Platzhalters.
+
+    Returns:
+        Die ZIP, die verwendet werden soll, oder `None`.
+    """
+    zip_datei = find_package()
+    if zip_datei is not None:
+        try:
+            version = _version_of(package_files(zip_datei))
+        except ValueError:
+            version = "unlesbar"
+        gespeichert = datetime.fromtimestamp(zip_datei.stat().st_mtime)
+        print(f"\nGefunden: {zip_datei}")
+        print(f"          Version {version}, gespeichert am {gespeichert:%d.%m.%Y %H:%M}")
+        if version == alte_version:
+            print("          Das ist die Version, die du schon hast.")
+        elif version != "unlesbar" and _ask("Diese Datei verwenden?"):
+            return zip_datei
+
+    ziel = Path.home() / "Downloads" / "SpaceProject.zip"
+    print("\nSo geht es von Hand:")
+    print("  1. Diese Adresse im Browser oeffnen; die Datei SpaceProject.zip")
+    print("     speichern (in Downloads) und NICHT entpacken:")
+    print(f"     {download_url(repository)}")
+    print("  2. Dann hier eingeben:")
+    print(f"     python tools\\update_space.py {zip_datei or ziel}")
+    return None
+
+
+def _from_github(alte_version: str) -> tuple[str, str, dict[str, bytes]] | Path | int:
     """Holt die neueste Version von GitHub.
 
     Returns:
-        Herkunft, Version und Dateien des Pakets -- oder, wenn es nichts zu
-        tun gibt oder nicht ging, gleich den Rueckgabewert fuer `main`: 0,
-        wenn die neueste Version schon da ist, 1 bei einem Fehler (der Grund
-        ist dann schon gemeldet).
+        Herkunft, Version und Dateien des Pakets; eine heruntergeladene ZIP,
+        wenn GitHub nicht ging und sie verwendet werden soll; oder gleich den
+        Rueckgabewert fuer `main`: 0, wenn die neueste Version schon da ist,
+        1 bei einem Fehler (der Grund ist dann schon gemeldet).
     """
     repository = repository_of(PROJECT_ROOT)
     print(f"Frage {repository} nach der neuesten Version ...")
@@ -651,11 +706,9 @@ def _from_github(alte_version: str) -> tuple[str, str, dict[str, bytes]] | int:
             files = package_files(fetch_package(repository, tag, Path(zwischen)))
     except (FetchFailed, ValueError) as fehler:
         print(f"Die neue Version liess sich nicht von GitHub holen: {fehler}")
-        print("Stattdessen geht es mit einer heruntergeladenen SpaceProject.zip:")
-        zip_datei = find_package()
-        beispiel = zip_datei if zip_datei is not None else Path("C:/Pfad/SpaceProject.zip")
-        print(f"    python tools\\update_space.py {beispiel}")
-        return 1
+        print("Stattdessen geht es mit einer heruntergeladenen SpaceProject.zip.")
+        gewaehlt = _offer_local_package(repository, alte_version)
+        return gewaehlt if gewaehlt is not None else 1
     return f"{repository} ({tag})", tag, files
 
 

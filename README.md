@@ -11,10 +11,10 @@ dem im Unterricht gearbeitet wird.**
 ## Fuer den Unterricht: das fertige Paket
 
 Wer nur unterrichten oder lernen will, braucht dieses Repository nicht zu
-klonen. Unter **Releases**
-(<https://github.com/SAE-GMO/pyfoot-space/releases>) liegt beim neuesten
-Eintrag `SpaceProject.zip`: herunterladen, entpacken, fertig -- die Bibliothek PyFoot
-ist darin enthalten.
+klonen. Die neueste `SpaceProject.zip` laedt dieser Link direkt herunter:
+<https://github.com/SAE-GMO/pyfoot-space/releases/latest/download/SpaceProject.zip> --
+entpacken, fertig; die Bibliothek PyFoot ist darin enthalten. Aeltere Versionen
+stehen unter **Releases**.
 
 Pfade in dieser Datei gelten ab dem Projektordner: `tools\check_environment.py`
 meint die Datei `check_environment.py` im Ordner `tools` darin, egal wo der

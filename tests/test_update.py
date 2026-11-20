@@ -466,3 +466,84 @@ def test_ohne_netz_zeigt_es_den_weg_ueber_die_zip(
     ausgabe = capsys.readouterr().out
     assert "Could not resolve host" in ausgabe
     assert "update_space.py C:" in ausgabe
+
+
+def _paket_zip(ziel: Path, version: str) -> Path:
+    """Eine kleine SpaceProject.zip mit Manifest."""
+    with zipfile.ZipFile(ziel, "w") as archive:
+        archive.writestr("main_space.py", "start\n")
+        archive.writestr(update_space.MANIFEST, f'{{"version": "{version}", "dateien": {{}}}}')
+    return ziel
+
+
+def _github_geht_nicht(monkeypatch: pytest.MonkeyPatch) -> None:
+    def kein_netz(repository: str) -> str:
+        raise FetchFailed("Das Paket wurde nicht gebaut.")
+
+    monkeypatch.setattr(update_space, "latest_tag", kein_netz)
+    monkeypatch.setattr(update_space, "_known_hashes", lambda project: ({}, "v0.1.3"))
+
+
+def test_ohne_github_nennt_es_den_download_link(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Statt eines Platzhalters: der feste Link und der echte Ordner Downloads."""
+    _github_geht_nicht(monkeypatch)
+    monkeypatch.setattr(update_space, "find_package", lambda: None)
+
+    assert update_space.main(["--dry-run"]) == 1
+    ausgabe = capsys.readouterr().out
+    assert "releases/latest/download/SpaceProject.zip" in ausgabe
+    assert str(Path.home() / "Downloads" / "SpaceProject.zip") in ausgabe
+    assert "Pfad" not in ausgabe, "kein Platzhalter C:\Pfad mehr"
+
+
+def test_eine_gefundene_zip_wird_mit_j_verwendet(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    """Wunsch der Lehrkraft (20.11.2026): die ZIP aus Downloads mit j uebernehmen."""
+    _github_geht_nicht(monkeypatch)
+    zip_datei = _paket_zip(tmp_path / "SpaceProject.zip", "v0.1.8")
+    monkeypatch.setattr(update_space, "find_package", lambda: zip_datei)
+    monkeypatch.setattr(update_space, "_ask", lambda frage: True)
+
+    assert update_space.main(["--dry-run"]) == 0
+    ausgabe = capsys.readouterr().out
+    assert "Version v0.1.8" in ausgabe
+    assert "v0.1.3  ->  v0.1.8" in ausgabe
+
+
+def test_ohne_j_bleibt_es_beim_hinweis(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    _github_geht_nicht(monkeypatch)
+    zip_datei = _paket_zip(tmp_path / "SpaceProject.zip", "v0.1.8")
+    monkeypatch.setattr(update_space, "find_package", lambda: zip_datei)
+    monkeypatch.setattr(update_space, "_ask", lambda frage: False)
+
+    assert update_space.main(["--dry-run"]) == 1
+    assert f"update_space.py {zip_datei}" in capsys.readouterr().out
+
+
+def test_die_eigene_version_wird_nicht_angeboten(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    """Eine alte ZIP in Downloads mit derselben Version bringt nichts."""
+    _github_geht_nicht(monkeypatch)
+    zip_datei = _paket_zip(tmp_path / "SpaceProject.zip", "v0.1.3")
+    monkeypatch.setattr(update_space, "find_package", lambda: zip_datei)
+
+    def nicht_fragen(frage: str) -> bool:
+        raise AssertionError("darf nicht fragen")
+
+    monkeypatch.setattr(update_space, "_ask", nicht_fragen)
+
+    assert update_space.main(["--dry-run"]) == 1
+    assert "schon hast" in capsys.readouterr().out
+
+
+def test_ohne_tastatur_wird_nicht_gefragt(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Umgeleitet oder im Test: nie auf eine Eingabe warten."""
+    monkeypatch.setattr("sys.stdin", None)
+
+    assert update_space._ask("Frage?") is False

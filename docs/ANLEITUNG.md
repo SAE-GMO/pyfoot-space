@@ -4,9 +4,8 @@
 
 Kurzanleitung für die Arbeit mit dem Projekt.
 
-Das Projekt kommt als Datei `SpaceProject.zip` — aus Moodle oder von
-<https://github.com/SAE-GMO/pyfoot-space/releases>, dort beim obersten
-Eintrag. Herunterladen und entpacken.
+Das Projekt kommt als Datei `SpaceProject.zip` — aus Moodle oder direkt als
+[Download der neuesten Version](https://github.com/SAE-GMO/pyfoot-space/releases/latest/download/SpaceProject.zip). Herunterladen und entpacken.
 
 ## 1. Einmal einrichten
 
@@ -281,7 +280,7 @@ Welt `levels\meine_welt.py` mit der Klasse `MeineWelt` sind das zwei Zeilen in
 `levels\__init__.py`:
 
 ```python
-from .meine_welt import MeineWelt      # bei den anderen Imports
+from .meine_welt import MeineWelt       # bei den anderen Imports
 
 __all__ = [
     ...
@@ -479,8 +478,8 @@ als ZIP-Datei unter `backup\`. Falls doch etwas schiefgeht, packst du sie
 einfach wieder aus.
 
 **Kommt das Werkzeug nicht an GitHub heran** — kein `git`, kein Netz —,
-nennt es den Grund. Dann geht es auch mit `SpaceProject.zip` aus Moodle oder von
-<https://github.com/SAE-GMO/pyfoot-space/releases>: Datei herunterladen,
+nennt es den Grund. Dann geht es auch mit `SpaceProject.zip` aus Moodle oder als
+[Download der neuesten Version](https://github.com/SAE-GMO/pyfoot-space/releases/latest/download/SpaceProject.zip): Datei herunterladen,
 **nicht** auspacken, und den Pfad dazu angeben:
 
 ```bash
