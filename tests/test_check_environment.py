@@ -232,3 +232,69 @@ def test_keine_syntaxwarnungen_im_skript() -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error", SyntaxWarning)
         compile(quelle, env.__file__, "exec")
+
+
+# ----------------------------------------------------------------------
+# Editor: PyCharm oder VS Code
+# ----------------------------------------------------------------------
+
+
+@pytest.fixture
+def leere_umgebung(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """Kein Editor im Suchpfad, PyCharm-Suche in einem leeren Testordner."""
+    for variable in ("PYCHARM_HOSTED", "TERMINAL_EMULATOR", "LOCALAPPDATA"):
+        monkeypatch.delenv(variable, raising=False)
+    monkeypatch.setenv("PROGRAMFILES", str(tmp_path))
+    monkeypatch.setattr(env.shutil, "which", lambda _name: None)
+    return tmp_path
+
+
+def _pycharm(ordner: Path, name: str) -> Path:
+    programm = ordner / "JetBrains" / name / "bin" / "pycharm64.exe"
+    programm.parent.mkdir(parents=True)
+    programm.write_text("", encoding="utf-8")
+    return programm
+
+
+def test_aus_pycharm_gestartet_ist_der_editor_da(
+    leere_umgebung: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("PYCHARM_HOSTED", "1")
+
+    assert env.check_editor() is True
+
+
+def test_im_terminal_von_pycharm_ist_der_editor_da(
+    leere_umgebung: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("TERMINAL_EMULATOR", "JetBrains-JediTerm")
+
+    assert env.check_editor() is True
+
+
+def test_installiertes_pycharm_genuegt(leere_umgebung: Path) -> None:
+    """Der Fall an der Schule: nur PyCharm, kein VS Code."""
+    _pycharm(leere_umgebung, "PyCharm Community Edition 2022.3.3")
+
+    assert env.check_editor() is True
+
+
+def test_das_neueste_pycharm_wird_genannt(leere_umgebung: Path) -> None:
+    """Der Name allein sortiert falsch: 'Community' kaeme nach '2025'."""
+    _pycharm(leere_umgebung, "PyCharm Community Edition 2022.3.3")
+    neu = _pycharm(leere_umgebung, "PyCharm 2025.2.4")
+
+    assert env.find_pycharm() == str(neu)
+
+
+def test_ohne_editor_wird_gewarnt(leere_umgebung: Path) -> None:
+    assert env.check_editor() is False
+
+
+def test_mit_vs_code_werden_die_erweiterungen_geprueft(
+    leere_umgebung: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(env.shutil, "which", lambda name: "code" if name == "code" else None)
+    monkeypatch.setattr(env, "check_vscode", lambda: False)
+
+    assert env.check_editor() is False

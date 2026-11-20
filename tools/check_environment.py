@@ -9,8 +9,9 @@ installiert der IT-Support.)
 Aufruf (im Projektordner):
     python tools\\check_environment.py
 
-Ebenso aus dem Ordner `tools` heraus (`python check_environment.py`) oder in
-VS Code ueber *Ausfuehren* -> *Ohne Debuggen ausfuehren*.
+Ebenso aus dem Ordner `tools` heraus (`python check_environment.py`), in
+VS Code ueber *Ausfuehren* -> *Ohne Debuggen ausfuehren* oder in PyCharm per
+Rechtsklick auf die Datei -> *Run*.
 
 Es kommt bewusst ohne fremde Pakete aus und laeuft auch mit aelteren
 Python-Versionen, damit es eine zu alte Version melden kann, statt daran zu
@@ -21,6 +22,7 @@ from __future__ import annotations
 
 import importlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -249,6 +251,65 @@ def check_vscode() -> bool:
     return complete
 
 
+#: Von PyCharm gesetzt: beim Start ueber eine Startkonfiguration bzw. in
+#: seinem eigenen Terminal. Wert: erwarteter Anfang.
+PYCHARM_HINTS = [("PYCHARM_HOSTED", ""), ("TERMINAL_EMULATOR", "JetBrains")]
+
+
+def running_in_pycharm() -> bool:
+    """Gibt an, ob dieses Skript aus PyCharm heraus gestartet wurde."""
+    for variable, start in PYCHARM_HINTS:
+        value = os.environ.get(variable)
+        if value and value.startswith(start):
+            return True
+    return False
+
+
+def find_pycharm() -> str | None:
+    """Sucht ein installiertes PyCharm an den ueblichen Orten unter Windows.
+
+    Dieselbe Suche wie in `pyfoot.editor.source`, hier ohne PyFoot, damit das
+    Skript auch ohne pygame laeuft.
+    """
+    for name in ("pycharm64", "pycharm"):
+        found = shutil.which(name)
+        if found:
+            return found
+    found_programs = []
+    for variable, rest in [("PROGRAMFILES", "JetBrains"), ("LOCALAPPDATA", "Programs")]:
+        folder = os.environ.get(variable)
+        if not folder or not os.path.isdir(os.path.join(folder, rest)):
+            continue
+        for entry in os.listdir(os.path.join(folder, rest)):
+            program = os.path.join(folder, rest, entry, "bin", "pycharm64.exe")
+            if entry.startswith("PyCharm") and os.path.isfile(program):
+                numbers = re.findall(r"\d+", entry)
+                found_programs.append((tuple(int(n) for n in numbers), program))
+    if not found_programs:
+        return None
+    # Bei mehreren Versionen die neueste, nach der Nummer im Ordnernamen.
+    return max(found_programs)[1]
+
+
+def check_editor() -> bool:
+    """Prueft, ob ein Editor fuer den Kurs bereitsteht: PyCharm oder VS Code.
+
+    PyCharm bringt seine Pruefungen selbst mit. VS Code braucht dafuer die
+    Erweiterungen (`check_vscode`).
+    """
+    if running_in_pycharm():
+        line(OK, "PyCharm", "dieses Skript laeuft darin")
+        return True
+    if shutil.which("code") is not None:
+        return check_vscode()
+    pycharm = find_pycharm()
+    if pycharm is not None:
+        line(OK, "PyCharm", pycharm)
+        return True
+    line(WARN, "Editor", "weder VS Code noch PyCharm gefunden")
+    return False
+
+
 def pip_arguments(packages: list[str]) -> list[str]:
     """Die pip-Aufrufargumente fuer die vorliegende Umgebung (ohne `python`)."""
     user = [] if in_virtual_environment() or site_packages_writable() else ["--user"]
@@ -347,19 +408,20 @@ def main() -> int:
             missing_teacher.append(package)
 
     heading("Editor")
-    editor_ok = check_vscode()
+    editor_ok = check_editor()
 
     heading("Ergebnis")
 
     if not editor_ok:
-        print("Hinweis: Ohne die Erweiterung ms-python.vscode-pylance zeigt der")
-        print("Editor keine Typwarnungen an. Siehe docs\\SUPPORT_INSTALLATION.md")
-        print("(Installationsanleitung fuer den IT-Support), Abschnitt 5.")
+        print("Hinweis: Gearbeitet wird mit PyCharm oder mit VS Code. In VS Code")
+        print("zeigt der Editor ohne die Erweiterung ms-python.vscode-pylance")
+        print("keine Typwarnungen an. Siehe docs\\SUPPORT_VSCODE.md")
+        print("(Installationsanleitung fuer den IT-Support), Abschnitt 3.")
         print("")
 
     if not python_ok:
         print("Python muss zuerst aktualisiert werden. Siehe")
-        print("docs\\SUPPORT_INSTALLATION.md, Abschnitt 2.")
+        print("docs\\SUPPORT_PYTHON.md, Abschnitt 3.")
         return 1
 
     if not pip_ok:

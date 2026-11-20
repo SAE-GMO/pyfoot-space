@@ -178,8 +178,8 @@ def test_die_lizenzhinweise_sind_dabei(package: Path) -> None:
 
 
 def test_die_anleitungen_sind_dabei(package: Path) -> None:
-    """`check_environment.py` verweist auf die Installationsanleitung."""
-    for name in ("ANLEITUNG", "SUPPORT_INSTALLATION"):
+    """`check_environment.py` verweist auf die Installationsanleitungen."""
+    for name in ("ANLEITUNG", "SUPPORT_PYTHON", "SUPPORT_VSCODE", "SUPPORT_VSCODE_PORTABLE"):
         assert (package / "docs" / f"{name}.md").is_file(), name
         assert (package / "docs" / f"{name}.pdf").is_file(), name
 
@@ -280,3 +280,14 @@ def test_die_liste_der_ausgelassenen_werkzeuge_stimmt() -> None:
 
     assert "check_project.py" in ausgelassen
     assert "check_environment.py" not in ausgelassen
+
+
+def test_die_startkonfigurationen_fuer_pycharm_sind_dabei(package: Path) -> None:
+    """Damit in PyCharm oben rechts 'Editor' und 'Raumschiff' zur Wahl stehen."""
+    for name in ("Editor", "Raumschiff"):
+        assert (package / ".run" / f"{name}.run.xml").is_file(), name
+
+
+def test_pycharm_einstellungen_des_rechners_gehen_nicht_mit(package: Path) -> None:
+    """`.idea/` haelt das gewaehlte Python fest -- auf jedem Rechner ein anderes."""
+    assert not (package / ".idea").exists()

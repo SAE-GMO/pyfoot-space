@@ -69,6 +69,34 @@ def test_vscode_speichert_beim_wechsel_ins_fenster() -> None:
     assert einstellungen["files.autoSave"] == "onFocusChange"
 
 
+def test_vscode_voreinstellungen_fuer_den_unterricht() -> None:
+    """Strg + Mausrad vergroessert die Schrift; helles Farbschema.
+
+    Im Projektordner statt im Benutzerprofil, weil die Schule die Profile bei
+    jedem Neustart zuruecksetzt (Wunsch der Lehrkraft, 13.11.2026).
+    "Default Light Modern" ist die alte Kennung; neuere Versionen von VS Code
+    setzen sie selbst in "Light Modern" um, aeltere (MNS+ 1.105) kennen nur sie.
+    """
+    einstellungen = json.loads(
+        (PROJECT_ROOT / ".vscode" / "settings.json").read_text(encoding="utf-8")
+    )
+    assert einstellungen["editor.mouseWheelZoom"] is True
+    assert einstellungen["workbench.colorTheme"] == "Default Light Modern"
+
+
+def test_vscode_ki_funktionen_sind_aus() -> None:
+    """Copilot und Chat sind im Projekt abgeschaltet (Wunsch der Lehrkraft, 19.11.2026).
+
+    Gilt fuer jedes Projekt, das Schueler:innen bekommen -- auch fuer die
+    Projekte zu HUEs und Klassenarbeiten (Leistungsueberpruefungen, Regel zu
+    KI-Funktionen in der Entwicklungsumgebung).
+    """
+    einstellungen = json.loads(
+        (PROJECT_ROOT / ".vscode" / "settings.json").read_text(encoding="utf-8")
+    )
+    assert einstellungen["chat.disableAIFeatures"] is True
+
+
 # ----------------------------------------------------------------------
 # Die Raumschiff-Fehler im laufenden Editor
 # ----------------------------------------------------------------------

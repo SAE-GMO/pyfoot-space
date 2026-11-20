@@ -16,3 +16,8 @@ __pycache__/
 /backup/
 *.bak
 *.tmp
+
+# PyCharm legt diesen Ordner beim Oeffnen selbst an; er enthaelt Einstellungen
+# des einzelnen Rechners (gewaehltes Python). Geteilt werden nur die
+# Startkonfigurationen in .run/.
+.idea/

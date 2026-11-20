@@ -1,8 +1,10 @@
 # Lizenz der Anleitungen
 
+<!-- ki-hinweis -->
+
 © 2026 Jörg Schaede
 
-Die Anleitungen in diesem Ordner (`ANLEITUNG`, `SUPPORT_INSTALLATION`, je als
+Die Anleitungen in diesem Ordner (`ANLEITUNG` und die `SUPPORT_…`-Anleitungen, je als
 Markdown und PDF) stehen unter der Lizenz
 **Creative Commons Namensnennung – Weitergabe unter gleichen Bedingungen 4.0
 International (CC BY-SA 4.0)**.

@@ -36,8 +36,8 @@ Es oeffnet sich ein Fenster, in dem ein Raumschiff losfliegt. Schliessen mit
 `Esc`.
 
 **Die ausfuehrliche Anleitung steht in `docs/ANLEITUNG.md`**, die
-Installationsanleitung fuer den IT-Support in `docs/SUPPORT_INSTALLATION.md`
-(beide auch als PDF).
+Installationsanleitungen fuer den IT-Support in `docs/SUPPORT_PYTHON.md` und
+`docs/SUPPORT_VSCODE.md` (alle auch als PDF).
 
 ## PyFoot ist mitgeliefert, nicht installiert
 
@@ -70,7 +70,7 @@ die Typangaben lesen. Die Typpruefung meldete dann faelschlich "keine Fehler",
 statt die vorhandenen zu zeigen -- gemessen und deshalb verworfen.
 
 Installiert werden muessen nur `pygame` und `mypy`; beides einmalig durch den
-IT-Support (siehe `docs/SUPPORT_INSTALLATION.md`).
+IT-Support (siehe `docs/SUPPORT_PYTHON.md`).
 
 ## Eine Aufgabe loesen
 

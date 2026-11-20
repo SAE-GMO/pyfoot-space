@@ -9,6 +9,9 @@
   "files.encoding": "utf8",
   "files.autoSave": "onFocusChange",
   "files.insertFinalNewline": true,
+  "chat.disableAIFeatures": true,
+  "editor.mouseWheelZoom": true,
+  "workbench.colorTheme": "Default Light Modern",
   "editor.rulers": [
     88
   ],

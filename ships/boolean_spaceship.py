@@ -27,7 +27,7 @@ class BooleanSpaceship(Spaceship):
         for _ in range(2):
             b = False
             for _ in range(2):
-                result = not (a and not b)
+                result = not (a and (not b))
                 print(f"a = {str(a):<5}  b = {str(b):<5}  ->  {result}")
                 b = not b
             a = not a

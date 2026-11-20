@@ -1,5 +1,7 @@
 # Installationsanleitung für den IT-Support
 
+<!-- ki-hinweis -->
+
 Diese Anleitung richtet sich an die Systembetreuung. Lehrkräfte und
 Schüler:innen haben keine lokalen Administratorrechte.
 

@@ -25,13 +25,17 @@ class LogicSpaceship(SensorSpaceship):
     def init(self) -> None:
         """Hier steht der Abschnitt, den du gerade untersuchst."""
         # a)
-        # while self.is_power_up_here() or self.is_asteroid_left() and self.is_asteroid_right():
+        # while (self.is_power_up_here()
+        #        or (self.is_asteroid_left()
+        #            and self.is_asteroid_right())):
         #     self.move()
 
         # b)
-        # while (self.is_power_up_here() or self.is_asteroid_left()) and self.is_asteroid_right():
+        # while ((self.is_power_up_here() or self.is_asteroid_left())
+        #        and self.is_asteroid_right()):
         #     self.move()
 
         # c)
-        # while (not self.is_power_up_here() or self.is_asteroid_left()) and self.can_move():
+        # while (((not self.is_power_up_here()) or self.is_asteroid_left())
+        #        and self.can_move()):
         #     self.move()

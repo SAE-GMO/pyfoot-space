@@ -42,7 +42,7 @@ import update_space  # noqa: E402
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 #: Ordner, die vollstaendig mitgehen.
-FOLDERS = ["pyfoot", "space", "ships", "levels", "docs", ".vscode"]
+FOLDERS = ["pyfoot", "space", "ships", "levels", "docs", ".vscode", ".run"]
 
 #: Einzelne Dateien im Projektordner.
 FILES = ["main_space.py", "main_editor.py", "README.md", "LICENSE", "pyproject.toml"]

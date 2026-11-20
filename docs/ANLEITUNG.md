@@ -1,5 +1,7 @@
 # Anleitung
 
+<!-- ki-hinweis -->
+
 Kurzanleitung für die Arbeit mit dem Projekt.
 
 Das Projekt kommt als Datei `SpaceProject.zip` — aus Moodle oder von
@@ -48,7 +50,7 @@ Eintrag. Herunterladen und entpacken.
 
    Meldet die Prüfung etwas als fehlend, wende dich an den IT-Support — die
    Installation braucht Rechte, die ein normales Konto nicht hat. Der Support
-   findet die Anleitung dazu in `SUPPORT_INSTALLATION.md`.
+   findet die Anleitungen dazu in `SUPPORT_PYTHON.md` und `SUPPORT_VSCODE.md`.
 
    Fehlen Pakete, **fragt** die Prüfung, ob sie sie gleich installieren soll.
    An der Schule mit `n` antworten; auf dem eigenen Rechner darfst du mit `j`
@@ -79,6 +81,28 @@ Eintrag. Herunterladen und entpacken.
 > Die Befehle in dieser Anleitung setzen voraus, dass das Terminal im Ordner
 > `SpaceProject` steht. Ausnahme: Die Skripte im Ordner `tools\` finden das Projekt
 > selbst und lassen sich von überall aufrufen.
+
+### Mit PyCharm statt VS Code
+
+Ist auf dem Rechner nur PyCharm installiert, geht die Einrichtung so. Die
+Menüs heißen je nach Spracheinstellung englisch oder deutsch.
+
+1. PyCharm öffnen, dann *File* (*Datei*), dann *Open…* (*Öffnen…*) und den
+   **Ordner** `SpaceProject` auswählen. Fragt PyCharm, ob du dem Projekt
+   vertraust: *Trust Project*.
+2. Erscheint oben im Editor ein gelber Hinweis, dass kein Python-Interpreter
+   eingestellt ist: darauf klicken und eine vorhandene Python-Version wählen,
+   3.11 oder neuer.
+3. **Starten:** Oben rechts steht eine Auswahlliste mit *Editor* und
+   *Raumschiff*. Eintrag wählen, dann auf das grüne Dreieck klicken. Eine andere
+   Datei startest du per Rechtsklick auf die Datei, dann *Run*.
+4. **Terminal:** unten links das Symbol *Terminal* (oder `Alt` + `F12`). Es steht
+   schon im Ordner `SpaceProject`; die Befehle aus Schritt 5 und 6 oben
+   funktionieren dort genauso.
+
+Die Arbeitsblätter beschreiben VS Code. In PyCharm sehen manche Dinge anders
+aus, zum Beispiel die Markierungen unter fehlerhaftem Code — gemeint ist
+dasselbe.
 
 ## 2. Wo liegt was
 
@@ -350,7 +374,7 @@ das Fenster bleibt offen.
 
 | Taste | Wirkung |
 | --- | --- |
-| `E` | **Zur Zeile** — öffnet VS Code an der Stelle in deiner Datei |
+| `E` | **Zur Zeile** — öffnet VS Code oder PyCharm an der Stelle in deiner Datei |
 | `R` | **Zurücksetzen** — liest geänderte Dateien neu ein und beginnt von vorn |
 | `Esc` | schließt nur das Fehlerfenster |
 
@@ -542,7 +566,7 @@ python tools\render_figure.py test_block01:WaveLineFigure bild.png
 Klassendiagramm des Projekts erzeugen (rein lokal, kein Datenversand):
 
 ```bash
-python -c "from pyfoot import write_diagram as w; print(w(root='.', ignore={'tests'}))"
+python -c "from pyfoot import write_diagram as w; print(w(root='.',ignore={'tests'}))"
 ```
 
 **Bewusst nicht vorhanden:** Einige Methoden fehlen absichtlich, weil ihre
@@ -609,7 +633,7 @@ schließt es wieder — das Fenster bleibt dabei offen.
 | --- | --- |
 | `PowerUp()` erzeugen | setzt ein einzelnes Objekt in die Welt |
 | `Level0()` anzeigen | **bei einer Welt:** wechselt zu dieser Welt |
-| Quelltext öffnen | öffnet die Datei in VS Code, an der richtigen Zeile |
+| Quelltext öffnen | öffnet die Datei in VS Code oder PyCharm, an der richtigen Zeile |
 | Unterklasse anlegen… | fragt nach dem Namen und legt eine neue Datei an |
 | Bild zuweisen… | zeigt die Bilder aus `space\assets\images\` |
 | Löschen | entfernt eine Klasse, die du selbst angelegt hast |
