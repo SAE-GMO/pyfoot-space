@@ -245,7 +245,7 @@ def leere_umgebung(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     for variable in ("PYCHARM_HOSTED", "TERMINAL_EMULATOR", "LOCALAPPDATA"):
         monkeypatch.delenv(variable, raising=False)
     monkeypatch.setenv("PROGRAMFILES", str(tmp_path))
-    monkeypatch.setattr(env.shutil, "which", lambda _name: None)
+    monkeypatch.setattr("check_environment.shutil.which", lambda _name: None)
     return tmp_path
 
 
@@ -294,7 +294,7 @@ def test_ohne_editor_wird_gewarnt(leere_umgebung: Path) -> None:
 def test_mit_vs_code_werden_die_erweiterungen_geprueft(
     leere_umgebung: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(env.shutil, "which", lambda name: "code" if name == "code" else None)
+    monkeypatch.setattr("check_environment.shutil.which", lambda name: "code" if name == "code" else None)
     monkeypatch.setattr(env, "check_vscode", lambda: False)
 
     assert env.check_editor() is False
